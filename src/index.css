@@ -60,12 +60,25 @@
     @apply max-w-none;
   }
 
+  .editor-container {
+    @apply bg-gray-50;
+    min-height: 11in;
+    padding: 1rem;
+    position: relative;
+  }
+
   .editor-wrapper {
-    @apply min-h-[70vh] w-full p-8 bg-clean-white rounded-md outline-none shadow-sm;
+    @apply bg-white shadow-sm rounded-md;
+    max-width: 8.5in;
+    min-height: 11in;
+    margin: 0 auto;
+    padding: 1in;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .editor {
-    @apply outline-none w-full min-h-[70vh];
+    @apply outline-none w-full;
+    min-height: 9in;
   }
 
   .suggestion {

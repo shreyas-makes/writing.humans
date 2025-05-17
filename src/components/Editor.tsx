@@ -39,16 +39,18 @@ const Editor = ({ content, onContentChange }: EditorProps) => {
   };
 
   return (
-    <div className="editor-wrapper">
-      <div 
-        ref={editorRef}
-        className="editor prose prose-sm sm:prose-base lg:prose-lg"
-        contentEditable
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
-        suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
+    <div className="editor-container bg-white shadow-sm rounded-lg mx-auto max-w-4xl">
+      <div className="editor-wrapper">
+        <div 
+          ref={editorRef}
+          className="editor prose prose-sm sm:prose-base lg:prose-lg"
+          contentEditable
+          onInput={handleInput}
+          onKeyDown={handleKeyDown}
+          suppressContentEditableWarning={true}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      </div>
     </div>
   );
 };

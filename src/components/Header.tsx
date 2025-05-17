@@ -20,7 +20,7 @@ const Header = ({
     <header className="border-b border-border bg-background sticky top-0 z-10">
       <div className="container flex items-center justify-between h-14 px-4">
         <div className="flex items-center gap-4">
-          <h1 className="font-semibold text-soft-blue">DocuSuggester</h1>
+          <h1 className="font-semibold text-soft-blue">writing.humans</h1>
           <input
             type="text"
             value={documentTitle}
