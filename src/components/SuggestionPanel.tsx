@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X } from 'lucide-react';
@@ -35,23 +34,21 @@ const SuggestionPanel = ({
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-3 p-3">
       {suggestions.map((suggestion) => (
-        <Card key={suggestion.id} className="border-l-2 border-l-soft-blue">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Suggested Change</CardTitle>
-            <CardDescription className="text-xs">AI editor suggestion</CardDescription>
+        <Card key={suggestion.id} className="space-y-2">
+          <CardHeader className="pb-1">
           </CardHeader>
-          <CardContent>
-            <div className="mb-2">
+          <CardContent className="pt-0 space-y-6">
+            <div className="mb-2 space-y-2">
               <p className="text-xs font-medium mb-1 text-muted-foreground">Original:</p>
               <p className="text-xs bg-muted p-2 rounded-md">{suggestion.originalText}</p>
             </div>
-            <div className="mb-2">
+            <div className="mb-2 space-y-2">
               <p className="text-xs font-medium mb-1 text-muted-foreground">Suggestion:</p>
               <p className="text-xs bg-primary/5 p-2 rounded-md border-l-2 border-primary">{suggestion.suggestedText}</p>
             </div>
-            <div className="mb-3">
+            <div className="mb-2 space-y-2">
               <p className="text-xs font-medium mb-1 text-muted-foreground">Explanation:</p>
               <p className="text-xs">{suggestion.explanation}</p>
             </div>
@@ -62,14 +59,14 @@ const SuggestionPanel = ({
                 className="text-suggest-red hover:text-suggest-red hover:bg-suggest-red/10"
                 onClick={() => onRejectSuggestion(suggestion)}
               >
-                <X className="h-4 w-4 mr-1" /> Reject
+                <X className="h-4 w-4 mr-1" />
               </Button>
               <Button 
                 size="sm" 
-                className="bg-suggest-green hover:bg-suggest-green/90 text-white"
+                className="bg-suggest-green/70 hover:bg-suggest-green/90 text-white"
                 onClick={() => onAcceptSuggestion(suggestion)}
               >
-                <Check className="h-4 w-4 mr-1" /> Accept
+                <Check className="h-4 w-4"/>
               </Button>
             </div>
           </CardContent>

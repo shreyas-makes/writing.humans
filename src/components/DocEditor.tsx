@@ -109,7 +109,7 @@ const DocEditor = () => {
       />
       
       <div className="flex flex-1 overflow-hidden">
-        <div className={`flex-1 overflow-auto p-4 md:p-8 ${!aiPanelOpen && "w-full"}`}>
+        <div className={`flex-1 overflow-auto p-6 md:p-4 ${!aiPanelOpen && "w-full"}`}>
           <Editor content={content} onContentChange={setContent} />
         </div>
         
