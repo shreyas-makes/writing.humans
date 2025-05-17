@@ -99,6 +99,27 @@ const DocEditor = () => {
     });
   };
 
+  // Function to handle toggling bold formatting
+  const handleToggleBold = () => {
+    // TODO: Get the current selection from the editor
+    // TODO: Check if the selection is already bold
+    // TODO: If not bold, wrap the selection in <strong> tags
+    // TODO: If bold, unwrap the selection from <strong> tags
+    // TODO: Update the 'content' state with the modified HTML
+    console.log("Toggle Bold clicked"); // Placeholder
+    document.execCommand('bold', false, undefined);
+  };
+
+  // Function to handle toggling italic formatting
+  const handleToggleItalic = () => {
+    document.execCommand('italic', false, undefined);
+  };
+
+  // Function to handle toggling underline formatting
+  const handleToggleUnderline = () => {
+    document.execCommand('underline', false, undefined);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header 
@@ -106,6 +127,9 @@ const DocEditor = () => {
         onDocumentTitleChange={setDocumentTitle} 
         onToggleAiPanel={() => setAiPanelOpen(!aiPanelOpen)}
         aiPanelOpen={aiPanelOpen}
+        onToggleBold={handleToggleBold}
+        onToggleItalic={handleToggleItalic}
+        onToggleUnderline={handleToggleUnderline}
       />
       
       <div className="flex flex-1 overflow-hidden">

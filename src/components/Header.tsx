@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Bold, Italic, Underline } from 'lucide-react';
@@ -8,13 +7,19 @@ interface HeaderProps {
   onDocumentTitleChange: (title: string) => void;
   onToggleAiPanel: () => void;
   aiPanelOpen: boolean;
+  onToggleBold: () => void;
+  onToggleItalic: () => void;
+  onToggleUnderline: () => void;
 }
 
 const Header = ({ 
   documentTitle, 
   onDocumentTitleChange, 
   onToggleAiPanel,
-  aiPanelOpen 
+  aiPanelOpen,
+  onToggleBold,
+  onToggleItalic,
+  onToggleUnderline
 }: HeaderProps) => {
   return (
     <header className="border-b border-border bg-background sticky top-0 z-10">
@@ -31,13 +36,13 @@ const Header = ({
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center border-r pr-3 mr-3">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onToggleBold}>
               <Bold className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onToggleItalic}>
               <Italic className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onToggleUnderline}>
               <Underline className="h-4 w-4" />
             </Button>
           </div>
