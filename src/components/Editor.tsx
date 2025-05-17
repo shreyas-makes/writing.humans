@@ -47,7 +47,6 @@ const Editor = ({ content, onContentChange }: EditorProps) => {
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: content }}
       />
     </div>
   );
