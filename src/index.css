@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,18 +60,11 @@
   }
 
   .editor-container {
-    @apply bg-gray-50;
-    min-height: 11in;
-    padding: 1rem;
-    position: relative;
-  }
-
-  .editor-wrapper {
-    @apply bg-white shadow-sm rounded-md;
+    @apply bg-white rounded-md shadow-sm mx-auto;
     max-width: 8.5in;
     min-height: 11in;
-    margin: 0 auto;
     padding: 1in;
+    margin-top: 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
