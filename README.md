@@ -1,73 +1,170 @@
-# Welcome to your Lovable project
+# writing.humans - AI-Assisted Document Editor
 
-## Project info
+A clean, minimal document editor with AI suggestions and persistent data storage using Supabase.
 
-**URL**: https://lovable.dev/projects/cd23c4fe-26cf-4c8f-b2e2-8edf4e30d3dc
+## Features
 
-## How can I edit this code?
+- 📝 Rich text editing with formatting controls
+- 🤖 AI-powered writing suggestions
+- 💾 Persistent document storage with Supabase
+- 📱 Responsive design for mobile and desktop
+- 🔄 Auto-save functionality
+- 📂 Document management (create, save, load, delete)
+- ⚡ Real-time sync across devices
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript, Vite
+- **UI**: Tailwind CSS, Radix UI components
+- **Database**: Supabase (PostgreSQL)
+- **State Management**: React hooks, TanStack Query
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cd23c4fe-26cf-4c8f-b2e2-8edf4e30d3dc) and start prompting.
+## Setup Instructions
 
-Changes made via Lovable will be committed automatically to this repo.
+### 1. Clone and Install Dependencies
 
-**Use your preferred IDE**
+```bash
+git clone <your-repo-url>
+cd blue-scribe-suggest
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 2. Set up Supabase
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. In your Supabase dashboard, go to the SQL Editor
+3. Copy and paste the contents of `supabase-schema.sql` and run it
+4. Go to Settings → API to get your project URL and anon key
 
-Follow these steps:
+### 3. Configure Environment Variables
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Create a `.env` file in the root directory:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+Replace the placeholder values with your actual Supabase project URL and anon key.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 4. Run the Application
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Database Schema
 
-**Use GitHub Codespaces**
+The application uses a simple `documents` table with the following structure:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sql
+documents (
+  id UUID PRIMARY KEY,
+  title TEXT,
+  content TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+)
+```
 
-## What technologies are used for this project?
+## Usage
 
-This project is built with:
+### Document Management
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Create New Document**: Click the "New" button in the documents sidebar or header
+- **Save Document**: Click the "Save" button or use auto-save (every 30 seconds)
+- **Load Document**: Click on any document in the documents list
+- **Delete Document**: Click the trash icon next to a document in the list
 
-## How can I deploy this project?
+### Writing Features
 
-Simply open [Lovable](https://lovable.dev/projects/cd23c4fe-26cf-4c8f-b2e2-8edf4e30d3dc) and click on Share -> Publish.
+- **Rich Text Editing**: Use the formatting toolbar for bold, italic, and underline
+- **AI Suggestions**: The AI panel provides real-time writing suggestions
+- **Auto-Save**: Documents are automatically saved every 30 seconds when there are changes
+- **Unsaved Changes Indicator**: See "• Unsaved" next to the document title when there are unsaved changes
 
-## Can I connect a custom domain to my Lovable project?
+### Navigation
 
-Yes, you can!
+- **Documents Panel**: Toggle with the "Documents" button in the header
+- **AI Suggestions Panel**: Toggle with the "Show/Hide AI Suggestions" button
+- **Mobile Responsive**: Panels automatically adapt for mobile devices
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Project Structure
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```
+src/
+├── components/
+│   ├── ui/              # Reusable UI components
+│   ├── DocEditor.tsx    # Main editor component
+│   ├── DocumentList.tsx # Document management sidebar
+│   ├── Editor.tsx       # Text editor component
+│   ├── Header.tsx       # Application header
+│   └── SuggestionPanel.tsx # AI suggestions panel
+├── hooks/
+│   ├── useDocuments.ts  # Document operations hook
+│   ├── use-mobile.ts    # Mobile detection hook
+│   └── use-toast.ts     # Toast notifications hook
+├── lib/
+│   └── supabase.ts      # Supabase client configuration
+└── pages/
+    └── Index.tsx        # Main page component
+```
+
+## Customization
+
+### Adding Authentication
+
+To add user authentication:
+
+1. Enable authentication in your Supabase project
+2. Update the RLS policy in `supabase-schema.sql`:
+   ```sql
+   -- Remove the public policy
+   DROP POLICY "Enable all operations for everyone" ON documents;
+   
+   -- Add authenticated users policy
+   CREATE POLICY "Enable all operations for authenticated users" 
+   ON documents FOR ALL USING (auth.role() = 'authenticated');
+   ```
+3. Add user authentication to your React app using Supabase Auth
+
+### Customizing AI Suggestions
+
+The current AI suggestions are mock data. To integrate with a real AI service:
+
+1. Replace the `generateMockSuggestion` function in `DocEditor.tsx`
+2. Add your AI service API calls
+3. Update the suggestion generation logic
+
+### Styling
+
+The application uses Tailwind CSS for styling. You can customize:
+
+- Colors: Update the Tailwind config
+- Components: Modify the UI components in `src/components/ui/`
+- Layout: Adjust the responsive breakpoints and spacing
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Support
+
+If you encounter any issues:
+
+1. Check that your Supabase URL and key are correctly set
+2. Verify the database schema was applied correctly
+3. Check the browser console for any error messages
+4. Ensure you have the latest dependencies installed
+
+For additional help, create an issue in the GitHub repository.

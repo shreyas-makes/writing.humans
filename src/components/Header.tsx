@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, Underline } from 'lucide-react';
+import { Bold, Italic, Underline, Save, FileText, Loader2 } from 'lucide-react';
 
 interface HeaderProps {
   documentTitle: string;
@@ -10,6 +10,11 @@ interface HeaderProps {
   onToggleBold: () => void;
   onToggleItalic: () => void;
   onToggleUnderline: () => void;
+  onSave: () => void;
+  onToggleDocumentList: () => void;
+  documentListOpen: boolean;
+  isSaving: boolean;
+  hasUnsavedChanges?: boolean;
 }
 
 const Header = ({ 
@@ -19,7 +24,12 @@ const Header = ({
   aiPanelOpen,
   onToggleBold,
   onToggleItalic,
-  onToggleUnderline
+  onToggleUnderline,
+  onSave,
+  onToggleDocumentList,
+  documentListOpen,
+  isSaving,
+  hasUnsavedChanges = false
 }: HeaderProps) => {
   return (
     <header className="border-b border-border bg-background sticky top-0 z-10">
@@ -33,8 +43,37 @@ const Header = ({
             className="bg-transparent border-none outline-none focus:ring-0 text-lg font-medium"
             aria-label="Document title"
           />
+          {hasUnsavedChanges && (
+            <span className="text-xs text-orange-500 font-medium">• Unsaved</span>
+          )}
         </div>
         <div className="flex items-center gap-3">
+          <Button 
+            variant={documentListOpen ? "secondary" : "outline"} 
+            onClick={onToggleDocumentList}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <FileText size={16} />
+            <span className="hidden sm:inline">Documents</span>
+          </Button>
+          
+          <Button 
+            onClick={onSave}
+            size="sm"
+            disabled={isSaving}
+            className="flex items-center gap-2"
+          >
+            {isSaving ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Save size={16} />
+            )}
+            <span className="hidden sm:inline">
+              {isSaving ? 'Saving...' : 'Save'}
+            </span>
+          </Button>
+
           <div className="hidden sm:flex items-center border-r pr-3 mr-3">
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onToggleBold}>
               <Bold className="h-4 w-4" />
