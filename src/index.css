@@ -59,6 +59,13 @@
     @apply max-w-none;
   }
 
+  .line-clamp-6 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+  }
+
   .editor-container {
     @apply bg-white rounded-md shadow-sm mx-auto;
     max-width: 8.5in;
