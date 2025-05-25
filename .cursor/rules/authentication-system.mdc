@@ -1,0 +1,88 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Authentication System Guide
+
+## Overview
+This project uses Supabase authentication with React Context for state management. The system includes user registration, login, password reset, and Row Level Security (RLS) for data protection.
+
+## Key Files
+
+### Authentication Context
+- [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx) - Main authentication context providing user state and auth methods
+- [src/components/ProtectedRoute.tsx](mdc:src/components/ProtectedRoute.tsx) - Route wrapper that redirects unauthenticated users
+
+### Authentication Pages
+- [src/pages/Login.tsx](mdc:src/pages/Login.tsx) - User sign-in page
+- [src/pages/Signup.tsx](mdc:src/pages/Signup.tsx) - User registration page  
+- [src/pages/ForgotPassword.tsx](mdc:src/pages/ForgotPassword.tsx) - Password reset request page
+- [src/pages/UpdatePassword.tsx](mdc:src/pages/UpdatePassword.tsx) - Password update page (from email link)
+
+### Integration Points
+- [src/App.tsx](mdc:src/App.tsx) - App wrapper with AuthProvider and route protection
+- [src/components/Header.tsx](mdc:src/components/Header.tsx) - Header with user menu and sign-out
+- [src/hooks/useDocuments.ts](mdc:src/hooks/useDocuments.ts) - Document operations with user association
+
+## Authentication Flow
+
+1. **Unauthenticated users** are redirected to `/login` via ProtectedRoute
+2. **New users** can register at `/signup` with email confirmation
+3. **Existing users** sign in at `/login` 
+4. **Forgot password** flow sends reset email via `/forgot-password`
+5. **Password reset** completed at `/update-password`
+
+## Database Security
+
+### Row Level Security (RLS)
+The [supabase-schema.sql](mdc:supabase-schema.sql) file defines RLS policies:
+- Users can only view/edit/delete their own documents
+- Documents are associated with users via `user_id` field
+- All operations require authentication (`TO authenticated`)
+
+### Document Association
+Documents are linked to users through the `user_id` field:
+```sql
+user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE
+```
+
+## Usage Patterns
+
+### Using Authentication Context
+```tsx
+import { useAuth } from '@/contexts/AuthContext'
+
+const { user, signIn, signOut, loading } = useAuth()
+```
+
+### Protecting Routes
+```tsx
+<Route path="/protected" element={
+  <ProtectedRoute>
+    <ProtectedComponent />
+  </ProtectedRoute>
+} />
+```
+
+### Document Operations
+All document operations in [useDocuments.ts](mdc:src/hooks/useDocuments.ts) automatically associate with the current user:
+```tsx
+const { user } = useAuth()
+// Documents are created with user_id: user?.id
+```
+
+## Security Considerations
+
+1. **RLS Policies** ensure data isolation between users
+2. **Protected Routes** prevent unauthorized access
+3. **User Association** links all data to authenticated users
+4. **Email Verification** can be enabled in Supabase dashboard
+5. **Password Requirements** enforced (minimum 6 characters)
+
+## Development Notes
+
+- Authentication state is managed globally via React Context
+- Loading states prevent flash of unauthenticated content
+- Toast notifications provide user feedback for auth actions
+- Automatic redirects maintain user flow after authentication

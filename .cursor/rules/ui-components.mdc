@@ -1,0 +1,247 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# UI Components & Styling Guide
+
+## Overview
+This project uses Shadcn/ui components with Tailwind CSS for a consistent, accessible, and responsive design system.
+
+## Component Library
+
+### Shadcn/ui Components
+Located in [src/components/ui/](mdc:src/components/ui), these provide the foundation:
+
+#### Form Components
+- [src/components/ui/button.tsx](mdc:src/components/ui/button.tsx) - Button variants and sizes
+- [src/components/ui/input.tsx](mdc:src/components/ui/input.tsx) - Text input fields
+- [src/components/ui/label.tsx](mdc:src/components/ui/label.tsx) - Form labels
+- [src/components/ui/textarea.tsx](mdc:src/components/ui/textarea.tsx) - Multi-line text input
+
+#### Layout Components
+- [src/components/ui/card.tsx](mdc:src/components/ui/card.tsx) - Card containers with header/content
+- [src/components/ui/separator.tsx](mdc:src/components/ui/separator.tsx) - Visual dividers
+- [src/components/ui/sidebar.tsx](mdc:src/components/ui/sidebar.tsx) - Collapsible sidebar layout
+
+#### Interactive Components
+- [src/components/ui/dropdown-menu.tsx](mdc:src/components/ui/dropdown-menu.tsx) - Dropdown menus
+- [src/components/ui/dialog.tsx](mdc:src/components/ui/dialog.tsx) - Modal dialogs
+- [src/components/ui/sheet.tsx](mdc:src/components/ui/sheet.tsx) - Slide-out panels
+- [src/components/ui/tooltip.tsx](mdc:src/components/ui/tooltip.tsx) - Hover tooltips
+
+#### Feedback Components
+- [src/components/ui/toast.tsx](mdc:src/components/ui/toast.tsx) - Toast notifications
+- [src/components/ui/sonner.tsx](mdc:src/components/ui/sonner.tsx) - Alternative toast system
+- [src/components/ui/skeleton.tsx](mdc:src/components/ui/skeleton.tsx) - Loading placeholders
+
+## Application Components
+
+### Core Components
+- [src/components/Header.tsx](mdc:src/components/Header.tsx) - App header with navigation and user menu
+- [src/components/Editor.tsx](mdc:src/components/Editor.tsx) - Rich text editor component
+- [src/components/DocumentList.tsx](mdc:src/components/DocumentList.tsx) - Document management sidebar
+- [src/components/SuggestionPanel.tsx](mdc:src/components/SuggestionPanel.tsx) - AI suggestions panel
+
+### Utility Components
+- [src/components/ProtectedRoute.tsx](mdc:src/components/ProtectedRoute.tsx) - Route protection wrapper
+
+## Styling System
+
+### Tailwind CSS Configuration
+Configured in [tailwind.config.ts](mdc:tailwind.config.ts):
+- Custom color palette
+- Typography scales
+- Responsive breakpoints
+- Component variants
+
+### Design Tokens
+Key design values used throughout:
+```css
+/* Colors */
+--blue-600: Primary brand color
+--gray-50: Light background
+--gray-900: Dark text
+--red-600: Error states
+--green-600: Success states
+
+/* Spacing */
+gap-2, gap-4, gap-6: Consistent spacing
+p-4, p-6, p-8: Padding scales
+m-2, m-4, m-6: Margin scales
+
+/* Typography */
+text-sm, text-base, text-lg: Font sizes
+font-medium, font-semibold, font-bold: Font weights
+```
+
+## Component Patterns
+
+### Button Usage
+```tsx
+import { Button } from '@/components/ui/button'
+
+// Primary action
+<Button>Save Document</Button>
+
+// Secondary action
+<Button variant="outline">Cancel</Button>
+
+// Destructive action
+<Button variant="destructive">Delete</Button>
+
+// Loading state
+<Button disabled={loading}>
+  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+  {loading ? 'Saving...' : 'Save'}
+</Button>
+```
+
+### Form Components
+```tsx
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+<div className="space-y-2">
+  <Label htmlFor="email">Email</Label>
+  <Input
+    id="email"
+    type="email"
+    placeholder="Enter your email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+  />
+</div>
+```
+
+### Card Layout
+```tsx
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+<Card>
+  <CardHeader>
+    <CardTitle>Document Title</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p>Document content goes here</p>
+  </CardContent>
+</Card>
+```
+
+### Toast Notifications
+```tsx
+import { useToast } from '@/hooks/use-toast'
+
+const { toast } = useToast()
+
+// Success message
+toast({
+  title: "Success",
+  description: "Document saved successfully.",
+})
+
+// Error message
+toast({
+  title: "Error",
+  description: "Failed to save document.",
+  variant: "destructive",
+})
+```
+
+## Responsive Design
+
+### Mobile-First Approach
+```tsx
+// Hide on mobile, show on larger screens
+<span className="hidden sm:inline">Desktop Text</span>
+
+// Different layouts for different screen sizes
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+```
+
+### Breakpoints
+- `sm:` - 640px and up
+- `md:` - 768px and up  
+- `lg:` - 1024px and up
+- `xl:` - 1280px and up
+
+## Accessibility
+
+### Built-in Features
+- Keyboard navigation support
+- Screen reader compatibility
+- Focus management
+- ARIA attributes
+- Color contrast compliance
+
+### Implementation Examples
+```tsx
+// Proper labeling
+<Label htmlFor="input-id">Field Label</Label>
+<Input id="input-id" aria-describedby="help-text" />
+
+// Loading states
+<Button disabled={loading} aria-label={loading ? 'Saving...' : 'Save'}>
+
+// Focus management
+<DropdownMenuTrigger asChild>
+  <Button variant="ghost" size="sm">
+    <User className="h-4 w-4" />
+  </Button>
+</DropdownMenuTrigger>
+```
+
+## Icon System
+
+### Lucide React Icons
+Used throughout for consistent iconography:
+```tsx
+import { Save, FileText, User, LogOut, Loader2 } from 'lucide-react'
+
+// Standard size (16px)
+<Save className="h-4 w-4" />
+
+// Larger size (24px)  
+<FileText className="h-6 w-6" />
+
+// With animation
+<Loader2 className="h-4 w-4 animate-spin" />
+```
+
+## Styling Best Practices
+
+### Class Organization
+1. **Layout** (flex, grid, positioning)
+2. **Sizing** (width, height, padding, margin)
+3. **Typography** (font, text color, alignment)
+4. **Colors** (background, borders)
+5. **Effects** (shadows, transitions, animations)
+
+### Utility Classes
+```tsx
+// Good: Semantic grouping
+className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+
+// Avoid: Inline styles
+style={{ backgroundColor: '#blue', padding: '8px' }}
+```
+
+### Component Variants
+Use class-variance-authority for component variants:
+```tsx
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground",
+        outline: "border border-input bg-background",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+      },
+    },
+  }
+)
+```

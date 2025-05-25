@@ -1,0 +1,222 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Supabase Integration Guide
+
+## Overview
+This project uses Supabase as the backend-as-a-service, providing authentication, database, and real-time features.
+
+## Configuration
+
+### Client Setup
+The Supabase client is configured in [src/lib/supabase.ts](mdc:src/lib/supabase.ts):
+- Environment variables: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+- Client instance exported for use throughout the app
+- Connection testing function for debugging
+
+### Environment Variables
+Required in [.env](mdc:.env) file:
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Database Schema
+
+### Documents Table
+Defined in [supabase-schema.sql](mdc:supabase-schema.sql):
+- `id` - UUID primary key (auto-generated)
+- `title` - Document title (default: "Untitled Document")
+- `content` - Document content (HTML/text)
+- `user_id` - Foreign key to auth.users (with CASCADE delete)
+- `created_at` - Timestamp (auto-generated)
+- `updated_at` - Timestamp (auto-updated via trigger)
+
+### Row Level Security (RLS)
+Policies ensure data isolation:
+- Users can only INSERT documents with their own user_id
+- Users can only SELECT their own documents
+- Users can only UPDATE their own documents  
+- Users can only DELETE their own documents
+
+## Authentication Integration
+
+### Auth Context
+[src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx) provides:
+- User session management
+- Sign up/in/out methods
+- Password reset functionality
+- Real-time auth state changes
+
+### Auth Methods
+```tsx
+// Sign up new user
+const { error } = await supabase.auth.signUp({ email, password })
+
+// Sign in existing user
+const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+// Sign out current user
+const { error } = await supabase.auth.signOut()
+
+// Reset password
+const { error } = await supabase.auth.resetPasswordForEmail(email)
+```
+
+## Data Operations
+
+### Document CRUD
+Implemented in [src/hooks/useDocuments.ts](mdc:src/hooks/useDocuments.ts):
+
+#### Create Document
+```tsx
+const { data, error } = await supabase
+  .from('documents')
+  .insert({
+    title,
+    content,
+    user_id: user?.id, // Associates with current user
+  })
+  .select()
+  .single()
+```
+
+#### Read Documents
+```tsx
+const { data, error } = await supabase
+  .from('documents')
+  .select('*')
+  .order('updated_at', { ascending: false })
+// RLS automatically filters to user's documents
+```
+
+#### Update Document
+```tsx
+const { data, error } = await supabase
+  .from('documents')
+  .update({ title, content, updated_at: new Date().toISOString() })
+  .eq('id', id)
+  .select()
+  .single()
+```
+
+#### Delete Document
+```tsx
+const { error } = await supabase
+  .from('documents')
+  .delete()
+  .eq('id', id)
+```
+
+## Error Handling
+
+### Pattern Used
+```tsx
+try {
+  const { data, error } = await supabaseOperation()
+  
+  if (error) {
+    console.error('Supabase error details:', error)
+    throw error
+  }
+  
+  // Handle success
+  return data
+} catch (error) {
+  console.error('Operation failed:', error)
+  toast({
+    title: "Error",
+    description: error.message,
+    variant: "destructive",
+  })
+  return null
+}
+```
+
+## Real-time Features
+
+### Auth State Changes
+```tsx
+const { data: { subscription } } = supabase.auth.onAuthStateChange(
+  (event, session) => {
+    // Handle auth state changes
+    setUser(session?.user ?? null)
+  }
+)
+
+// Cleanup
+return () => subscription.unsubscribe()
+```
+
+### Database Subscriptions
+For real-time document updates:
+```tsx
+const subscription = supabase
+  .channel('documents')
+  .on('postgres_changes', 
+    { event: '*', schema: 'public', table: 'documents' },
+    (payload) => {
+      // Handle real-time changes
+    }
+  )
+  .subscribe()
+```
+
+## TypeScript Integration
+
+### Database Types
+Defined in [src/lib/supabase.ts](mdc:src/lib/supabase.ts):
+```tsx
+export interface Document {
+  id: string
+  title: string
+  content: string
+  user_id: string | null
+  created_at: string
+  updated_at: string
+}
+```
+
+### Supabase Client Types
+```tsx
+import { User, Session } from '@supabase/supabase-js'
+```
+
+## Best Practices
+
+### Security
+1. **Always use RLS policies** for data protection
+2. **Validate user ownership** before operations
+3. **Use environment variables** for sensitive config
+4. **Handle auth state properly** in components
+
+### Performance
+1. **Select only needed columns** in queries
+2. **Use pagination** for large datasets
+3. **Implement proper loading states**
+4. **Cache frequently accessed data**
+
+### Error Handling
+1. **Always check for errors** in responses
+2. **Provide user-friendly error messages**
+3. **Log detailed errors** for debugging
+4. **Implement retry logic** where appropriate
+
+## Development Tips
+
+### Testing Connection
+Use the test function in [src/lib/supabase.ts](mdc:src/lib/supabase.ts):
+```tsx
+const result = await testSupabaseConnection()
+if (!result.success) {
+  console.error('Connection failed:', result.error)
+}
+```
+
+### Debugging
+- Check browser network tab for API calls
+- Monitor Supabase dashboard for real-time logs
+- Use console.log for auth state changes
+- Verify RLS policies in Supabase SQL editor

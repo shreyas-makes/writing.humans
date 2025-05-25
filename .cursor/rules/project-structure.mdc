@@ -1,0 +1,103 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+## Overview
+This is a React + TypeScript document editor application with AI suggestions, built with Vite, Supabase, and Tailwind CSS.
+
+## Architecture
+
+### Frontend Stack
+- **React 18** with TypeScript
+- **Vite** for build tooling
+- **Tailwind CSS** for styling
+- **Shadcn/ui** for UI components
+- **React Router** for navigation
+- **TanStack Query** for data fetching
+
+### Backend & Database
+- **Supabase** for authentication and database
+- **PostgreSQL** with Row Level Security (RLS)
+- Real-time subscriptions for live updates
+
+## Directory Structure
+
+### Core Application
+- [src/App.tsx](mdc:src/App.tsx) - Main app component with providers and routing
+- [src/main.tsx](mdc:src/main.tsx) - Application entry point
+- [index.html](mdc:index.html) - HTML template
+
+### Pages
+- [src/pages/Home.tsx](mdc:src/pages/Home.tsx) - Landing page with document list
+- [src/pages/Editor.tsx](mdc:src/pages/Editor.tsx) - Individual document editor
+- [src/pages/Login.tsx](mdc:src/pages/Login.tsx) - Authentication pages
+- [src/pages/NotFound.tsx](mdc:src/pages/NotFound.tsx) - 404 error page
+
+### Components
+- [src/components/Header.tsx](mdc:src/components/Header.tsx) - App header with navigation
+- [src/components/Editor.tsx](mdc:src/components/Editor.tsx) - Rich text editor
+- [src/components/DocumentList.tsx](mdc:src/components/DocumentList.tsx) - Document management sidebar
+- [src/components/SuggestionPanel.tsx](mdc:src/components/SuggestionPanel.tsx) - AI suggestions panel
+- [src/components/ui/](mdc:src/components/ui) - Reusable UI components (Shadcn/ui)
+
+### Hooks & Logic
+- [src/hooks/useDocuments.ts](mdc:src/hooks/useDocuments.ts) - Document CRUD operations
+- [src/hooks/use-toast.ts](mdc:src/hooks/use-toast.ts) - Toast notification system
+- [src/hooks/use-mobile.ts](mdc:src/hooks/use-mobile.ts) - Mobile device detection
+
+### Configuration & Utils
+- [src/lib/supabase.ts](mdc:src/lib/supabase.ts) - Supabase client configuration
+- [src/lib/utils.ts](mdc:src/lib/utils.ts) - Utility functions
+- [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx) - Authentication context
+
+### Database
+- [supabase-schema.sql](mdc:supabase-schema.sql) - Database schema and RLS policies
+
+### Configuration Files
+- [package.json](mdc:package.json) - Dependencies and scripts
+- [vite.config.ts](mdc:vite.config.ts) - Vite configuration
+- [tailwind.config.ts](mdc:tailwind.config.ts) - Tailwind CSS configuration
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+
+## Key Patterns
+
+### State Management
+- React Context for global state (authentication)
+- Local state with useState for component-specific data
+- TanStack Query for server state management
+
+### Data Flow
+1. User authentication via Supabase Auth
+2. Document operations through useDocuments hook
+3. Real-time updates via Supabase subscriptions
+4. UI updates through React state
+
+### Component Architecture
+- Functional components with hooks
+- Props interface definitions for type safety
+- Separation of concerns (UI, logic, data)
+- Reusable UI components from Shadcn/ui
+
+### Styling Approach
+- Utility-first CSS with Tailwind
+- Component variants using class-variance-authority
+- Responsive design with mobile-first approach
+- Dark/light mode support via CSS variables
+
+## Development Workflow
+
+### Environment Setup
+1. Install dependencies: `npm install`
+2. Configure environment variables in [.env](mdc:.env)
+3. Set up Supabase project and run schema
+4. Start development server: `npm run dev`
+
+### Adding New Features
+1. Create components in appropriate directories
+2. Add types/interfaces for TypeScript
+3. Implement hooks for data operations
+4. Add routes if needed in [App.tsx](mdc:src/App.tsx)
+5. Update database schema if required

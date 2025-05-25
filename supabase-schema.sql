@@ -3,6 +3,7 @@ CREATE TABLE documents (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL DEFAULT 'Untitled Document',
   content TEXT NOT NULL DEFAULT '',
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -28,9 +29,34 @@ CREATE TRIGGER update_documents_updated_at
 -- Enable Row Level Security (RLS)
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 
--- Create policy to allow all operations for now (you can modify this based on your authentication needs)
--- For authenticated users only, uncomment the line below and comment out the one after
--- CREATE POLICY "Enable all operations for authenticated users" ON documents FOR ALL USING (auth.role() = 'authenticated');
+-- Remove the old permissive policy if it exists
+DROP POLICY IF EXISTS "Enable all operations for everyone" ON documents; 
 
--- For now, allow all operations (remove this in production and implement proper authentication)
-CREATE POLICY "Enable all operations for everyone" ON documents FOR ALL USING (true); 
+-- Policy: Users can insert their own documents.
+CREATE POLICY "Users can insert their own documents"
+ON documents
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy: Users can view their own documents.
+CREATE POLICY "Users can view their own documents"
+ON documents
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Policy: Users can update their own documents.
+CREATE POLICY "Users can update their own documents"
+ON documents
+FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy: Users can delete their own documents.
+CREATE POLICY "Users can delete their own documents"
+ON documents
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id); 

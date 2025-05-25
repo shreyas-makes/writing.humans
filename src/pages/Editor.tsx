@@ -7,6 +7,7 @@ import { type Suggestion } from '@/components/SuggestionPanel';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useAuth } from '@/contexts/AuthContext';
 import { FileText, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -23,6 +24,7 @@ const EditorPage = () => {
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   
   const {
     currentDocument,
@@ -30,14 +32,21 @@ const EditorPage = () => {
     isSaving,
     loadDocument,
     saveDocument,
+    createDocumentWithId,
   } = useDocuments();
 
   // Load document when component mounts or documentId changes
   useEffect(() => {
     if (documentId) {
-      loadDocument(documentId);
+      loadDocument(documentId).then((result) => {
+        if (result && typeof result === 'object' && 'notFound' in result) {
+          // Document not found, create a new one
+          console.log('Creating new document with ID:', documentId);
+          createDocumentWithId(documentId);
+        }
+      });
     }
-  }, [documentId, loadDocument]);
+  }, [documentId, loadDocument, createDocumentWithId]);
 
   // Check for unsaved changes
   useEffect(() => {

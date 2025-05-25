@@ -1,6 +1,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, Underline, Save, FileText, Loader2 } from 'lucide-react';
+import { Bold, Italic, Underline, Save, FileText, Loader2, User, LogOut } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
   documentTitle: string;
@@ -31,6 +40,7 @@ const Header = ({
   isSaving,
   hasUnsavedChanges = false
 }: HeaderProps) => {
+  const { user, signOut } = useAuth();
   return (
     <header className="border-b border-border bg-background sticky top-0 z-10">
       <div className="container flex items-center justify-between h-14 px-4">
@@ -92,6 +102,25 @@ const Header = ({
           >
             {aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
           </Button>
+
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <User className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                {user?.email}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
