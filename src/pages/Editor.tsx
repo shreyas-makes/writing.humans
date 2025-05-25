@@ -54,6 +54,7 @@ const EditorPage = () => {
     error: aiError,
     removeSuggestion,
     hasApiKey,
+    manuallyTriggerSuggestions,
   } = useAISuggestions({ content, enabled: aiPanelOpen, documentTitle });
 
   // Calculate max suggestions based on document length (1 suggestion per 5 lines)

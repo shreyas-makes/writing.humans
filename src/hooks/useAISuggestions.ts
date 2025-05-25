@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { OpenAIService } from '@/lib/openai';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { type Suggestion } from '@/components/SuggestionPanel';
@@ -32,6 +32,41 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
   const [error, setError] = useState<string | null>(null);
   const [lastContentSnapshot, setLastContentSnapshot] = useState<string>('');
   const { settings } = useUserSettings();
+  
+  // Add a manual trigger function for testing
+  const manuallyTriggerSuggestions = useCallback(() => {
+    console.log('🔧 Manual trigger: Generating suggestions for testing');
+    if (enabled && settings.openai_api_key && content.length > 30) {
+      if (generateSuggestionsRef.current) {
+        generateSuggestionsRef.current(content, documentTitle);
+      }
+    } else {
+      console.log('🔧 Manual trigger: Cannot generate - missing requirements', {
+        enabled,
+        hasApiKey: !!settings.openai_api_key,
+        contentLength: content.length
+      });
+    }
+  }, [enabled, settings.openai_api_key, content, documentTitle]);
+  
+  // Use refs to store latest values for interval callback
+  const contentRef = useRef(content);
+  const documentTitleRef = useRef(documentTitle);
+  const lastContentSnapshotRef = useRef(lastContentSnapshot);
+  const generateSuggestionsRef = useRef<typeof generateSuggestions>();
+  
+  // Update refs when values change
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+  
+  useEffect(() => {
+    documentTitleRef.current = documentTitle;
+  }, [documentTitle]);
+  
+  useEffect(() => {
+    lastContentSnapshotRef.current = lastContentSnapshot;
+  }, [lastContentSnapshot]);
 
   // Calculate max suggestions based on document length (1 suggestion per 5 lines)
   const calculateMaxSuggestions = useCallback((textContent: string) => {
@@ -171,6 +206,11 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
     }
   }, [enabled, settings, suggestions, calculateMaxSuggestions]);
 
+  // Update generateSuggestions ref
+  useEffect(() => {
+    generateSuggestionsRef.current = generateSuggestions;
+  }, [generateSuggestions]);
+
   // Determine interval based on suggestion frequency
   
   const getInterval = () => {
@@ -189,7 +229,9 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
       hasApiKey: !!settings.openai_api_key,
       contentLength: content.length,
       frequency: settings.suggestion_frequency,
-      intervalMs: intervalTime
+      intervalMs: intervalTime,
+      intervalMinutes: intervalTime / (60 * 1000),
+      currentSuggestions: suggestions.length
     });
 
     if (!enabled || !settings.openai_api_key) {
@@ -202,12 +244,14 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
       console.log(`⏰ ${settings.suggestion_frequency} frequency interval fired, checking for content changes`);
       
       // Only generate suggestions if content has meaningfully changed since last check
-      const currentContentSnapshot = content.replace(/<[^>]*>?/gm, '').trim();
+      const currentContentSnapshot = contentRef.current.replace(/<[^>]*>?/gm, '').trim();
       
-      if (currentContentSnapshot !== lastContentSnapshot && currentContentSnapshot.length > 30) {
+      if (currentContentSnapshot !== lastContentSnapshotRef.current && currentContentSnapshot.length > 30) {
         console.log('📝 Content has changed, generating suggestions');
         setLastContentSnapshot(currentContentSnapshot);
-        generateSuggestions(content, documentTitle);
+        if (generateSuggestionsRef.current) {
+          generateSuggestionsRef.current(contentRef.current, documentTitleRef.current);
+        }
       } else {
         console.log('📝 No meaningful content changes, skipping suggestion generation');
       }
@@ -217,16 +261,24 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
       console.log(`🧹 Cleaning up ${settings.suggestion_frequency} frequency interval`);
       clearInterval(interval);
     };
-  }, [enabled, settings.openai_api_key, settings.suggestion_frequency, generateSuggestions, content, documentTitle, lastContentSnapshot]);
+  }, [enabled, settings.openai_api_key, settings.suggestion_frequency]);
 
-  // Update content snapshot when content changes (but don't trigger suggestions immediately)
+  // Update content snapshot when content changes and trigger initial suggestions
   useEffect(() => {
     const currentContentSnapshot = content.replace(/<[^>]*>?/gm, '').trim();
     if (currentContentSnapshot.length > 30 && lastContentSnapshot === '') {
-      // Initialize the snapshot on first meaningful content
+      // Initialize the snapshot on first meaningful content and generate initial suggestions
+      console.log('📝 First meaningful content detected, generating initial suggestions');
       setLastContentSnapshot(currentContentSnapshot);
+      
+      // Generate suggestions after a short delay for the first meaningful content
+      if (enabled && settings.openai_api_key) {
+        setTimeout(() => {
+          generateSuggestions(content, documentTitle);
+        }, 2000); // 2 second delay for initial suggestions
+      }
     }
-  }, [content, lastContentSnapshot]);
+  }, [content, lastContentSnapshot, enabled, settings.openai_api_key, generateSuggestions, documentTitle]);
 
   const removeSuggestion = useCallback((suggestionId: string) => {
     console.log('🗑️ Removing suggestion:', suggestionId);
@@ -245,5 +297,6 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
     removeSuggestion,
     clearAllSuggestions,
     hasApiKey: !!settings.openai_api_key,
+    manuallyTriggerSuggestions, // For testing purposes
   };
 }; 
