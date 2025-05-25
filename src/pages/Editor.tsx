@@ -336,6 +336,8 @@ const EditorPage = () => {
             </div>
             <SuggestionPanel 
               suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel
+              onAcceptSuggestion={handleAcceptSuggestion}
+              onRejectSuggestion={handleRejectSuggestion}
             />
           </aside>
         )}

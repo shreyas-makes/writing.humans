@@ -15,6 +15,8 @@ const Signup = () => {
   const { signUp } = useAuth()
   const navigate = useNavigate()
 
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     

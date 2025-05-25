@@ -33,15 +33,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      console.log('🔍 Getting initial session...')
       const { data: { session }, error } = await supabase.auth.getSession()
       if (error) {
         console.error('❌ Error getting session:', error)
       } else {
-        console.log('✅ Session retrieved:', session ? 'Authenticated' : 'Not authenticated')
-        if (session) {
-          console.log('👤 User:', session.user.email)
-        }
         setSession(session)
         setUser(session?.user ?? null)
       }
@@ -53,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)

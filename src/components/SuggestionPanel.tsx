@@ -41,38 +41,64 @@ function computeLCS(arr1: string[], arr2: string[]): string[] {
 
 function generateDiff(originalWords: string[], suggestedWords: string[], lcs: string[]): Array<[number, string]> {
   const diff: Array<[number, string]> = [];
-  let ptrOriginal = 0;
-  let ptrSuggested = 0;
-  let ptrLCS = 0;
+  let i = 0; // Pointer for originalWords
+  let j = 0; // Pointer for suggestedWords
+  let k = 0; // Pointer for lcs
 
-  while (ptrOriginal < originalWords.length || ptrSuggested < suggestedWords.length) {
-    const lcsWord = ptrLCS < lcs.length ? lcs[ptrLCS] : null;
-    const originalWord = ptrOriginal < originalWords.length ? originalWords[ptrOriginal] : null;
-    const suggestedWord = ptrSuggested < suggestedWords.length ? suggestedWords[ptrSuggested] : null;
-
-    if (originalWord !== null && originalWord === lcsWord && suggestedWord !== null && suggestedWord === lcsWord) {
-      diff.push([0, originalWord]);
-      ptrOriginal++;
-      ptrSuggested++;
-      ptrLCS++;
-    } else if (originalWord !== null && (lcsWord === null || originalWord !== lcsWord || suggestedWord !== lcsWord /* Ensure original is consumed if not part of LCS involving suggestedWord */ )) {
-      // If originalWord is not the LCS word, or if suggestedWord is also not the LCS word (implying originalWord must be a deletion)
-      if (suggestedWord !== null && suggestedWord === lcsWord) { // If suggested is LCS, then original must be a delete IF it's not also LCS
-         // This case is tricky, means original might be delete AND suggested might be insert before common lcs word
-         // Prioritize consuming from original if it's not matching LCS
-         diff.push([-1, originalWord]);
-         ptrOriginal++;
-      } else { // If suggestedWord is also not LCS word, or originalWord is simply not LCS
-         diff.push([-1, originalWord]);
-         ptrOriginal++;
-      }
-    } else if (suggestedWord !== null && (lcsWord === null || suggestedWord !== lcsWord)) {
-      diff.push([1, suggestedWord]);
-      ptrSuggested++;
+  while (k < lcs.length) {
+    // Consume deletions from originalWords
+    while (i < originalWords.length && originalWords[i] !== lcs[k]) {
+      diff.push([-1, originalWords[i]]);
+      i++;
+    }
+    // Consume additions from suggestedWords
+    while (j < suggestedWords.length && suggestedWords[j] !== lcs[k]) {
+      diff.push([1, suggestedWords[j]]);
+      j++;
+    }
+    
+    // Consume common LCS element
+    // Ensure pointers are within bounds before accessing elements
+    if (i < originalWords.length && j < suggestedWords.length && k < lcs.length && 
+        originalWords[i] === lcs[k] && suggestedWords[j] === lcs[k]) {
+      diff.push([0, lcs[k]]);
+      i++;
+      j++;
+      k++;
     } else {
+      // If LCS element is not found at current positions of original/suggested,
+      // it implies an issue with LCS or inputs, or remaining parts are purely add/delete.
+      // For robustness, break here and let trailing logic handle the rest.
+      // This case could also happen if lcs[k] was a whitespace/empty string that causes misalignment.
+      // Given splitText can produce various tokens, this robust handling is safer.
+      // If k < lcs.length but we can't match, it means lcs[k] is unmatchable with current i,j.
+      // This might mean lcs[k] itself is problematic or i,j already passed its match.
+      // The outer loops for remaining elements will handle non-LCS tails.
+      // To prevent infinite loops if k doesn't advance but i and j also don't, we can advance k cautiously
+      // or rely on the fact that i or j must advance to make progress towards lcs[k].
+      // The most straightforward is that if originalWords[i] !== lcs[k] or suggestedWords[j] !== lcs[k],
+      // the inner while loops should have handled them. So this 'else' suggests k should advance
+      // or that the remaining parts don't involve lcs[k].
+      // However, simply breaking and letting trailing additions/deletions handle seems safer.
+      // If we are in this else, it means we couldn't make a 3-way match for lcs[k].
+      // It's possible that lcs[k] was skipped due to prior advancement of i or j.
+      // A simple break is fine as the post-loop logic will handle remaining words.
       break; 
     }
   }
+
+  // Append remaining deletions from originalWords
+  while (i < originalWords.length) {
+    diff.push([-1, originalWords[i]]);
+    i++;
+  }
+
+  // Append remaining additions from suggestedWords
+  while (j < suggestedWords.length) {
+    diff.push([1, suggestedWords[j]]);
+    j++;
+  }
+
   return diff;
 }
 
@@ -118,10 +144,10 @@ const SuggestionPanel = ({
 }: SuggestionPanelProps) => {
   if (!suggestion) {
     return (
-      <div className="p-3">
-        <div className="text-muted-foreground">
-          <p className="text-xs">No suggestion selected</p>
-          <p className="text-xs mt-1">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
+      <div className="h-full flex items-center justify-center p-4">
+        <div className="text-center text-muted-foreground">
+          <p>No suggestion selected</p>
+          <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
         </div>
       </div>
     );
