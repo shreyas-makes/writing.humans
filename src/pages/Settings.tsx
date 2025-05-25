@@ -14,7 +14,7 @@ import LogoHeader from '@/components/ui/LogoHeader';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { settings, isLoading, isSaving, updateSetting } = useUserSettings();
+  const { settings, isLoading, isSaving, updateSetting, updateApiKey } = useUserSettings();
   const { toast } = useToast();
   const { user } = useAuth();
   const [showApiKey, setShowApiKey] = useState(false);
@@ -34,13 +34,14 @@ const Settings = () => {
 
   const handleApiKeyUpdate = async () => {
     if (apiKeyValue.trim()) {
-      // Here you would typically call an API to update the key
-      // For now, we'll just show a toast
-      toast({
-        title: "API Key Updated",
-        description: "Your OpenAI API key has been updated successfully.",
-      });
-      setApiKeyValue('');
+      const success = await updateApiKey(apiKeyValue.trim());
+      if (success) {
+        toast({
+          title: "API Key Updated",
+          description: "Your OpenAI API key has been updated successfully.",
+        });
+        setApiKeyValue('');
+      }
     }
   };
 

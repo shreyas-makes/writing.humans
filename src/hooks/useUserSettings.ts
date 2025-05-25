@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface UserSettings {
   id?: string;
   user_id?: string;
+  openai_api_key?: string;
   has_openai_api_key?: boolean;
   ai_model: string;
   suggestion_frequency: 'low' | 'normal' | 'high';
@@ -15,6 +16,7 @@ export interface UserSettings {
 }
 
 const defaultSettings: UserSettings = {
+  openai_api_key: '',
   has_openai_api_key: false,
   ai_model: 'gpt-3.5-turbo',
   suggestion_frequency: 'normal',
@@ -119,17 +121,16 @@ export const useUserSettings = () => {
 
   // Update a specific setting
   const updateSetting = async (key: keyof UserSettings, value: any) => {
-    if (key === 'has_openai_api_key') {
-      // This should be handled by a dedicated backend function for API key management
-      console.warn('Attempted to update has_openai_api_key directly from client. This should be managed via a backend endpoint.');
-      toast({
-        title: "Action not allowed",
-        description: "API key status is managed by the server.",
-        variant: "destructive",
-      });
-      return false;
-    }
     return await saveSettings({ [key]: value });
+  };
+
+  // Update API key specifically
+  const updateApiKey = async (apiKey: string) => {
+    const hasKey = apiKey.trim().length > 0;
+    return await saveSettings({ 
+      openai_api_key: apiKey,
+      has_openai_api_key: hasKey 
+    });
   };
 
   // Load settings when user changes
@@ -143,6 +144,7 @@ export const useUserSettings = () => {
     isSaving,
     saveSettings,
     updateSetting,
+    updateApiKey,
     loadSettings,
   };
 }; 

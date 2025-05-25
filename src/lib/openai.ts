@@ -13,6 +13,7 @@ interface OpenAIResponse {
 
 interface SuggestionRequest {
   content: string;
+  apiKey: string;
   model?: string;
   suggestionType?: 'general' | 'conciseness' | 'clarity' | 'engagement' | 'expand' | 'rephrase_alternatives';
   documentContext?: {
@@ -30,14 +31,49 @@ interface ParsedSuggestion {
 export class OpenAIService {
   private static async makeRequest(
     messages: OpenAIMessage[],
+    apiKey: string,
     model: string = 'gpt-3.5-turbo'
   ): Promise<string> {
-    console.warn('OpenAIService.makeRequest: API key handling not yet migrated to backend.');
-    return JSON.stringify([]);
+    if (!apiKey || !apiKey.trim()) {
+      throw new Error('OpenAI API key is required');
+    }
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 1000,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`OpenAI API error: ${response.status} ${response.statusText}. ${errorData.error?.message || ''}`);
+      }
+
+      const data: OpenAIResponse = await response.json();
+      
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('No response from OpenAI API');
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('OpenAI API request failed:', error);
+      throw error;
+    }
   }
 
   static async generateSuggestions({
     content,
+    apiKey,
     model = 'gpt-3.5-turbo',
     suggestionType = 'general', 
     documentContext
@@ -46,6 +82,10 @@ export class OpenAIService {
 
     if (plainText.length < 30) { 
       return [];
+    }
+
+    if (!apiKey || !apiKey.trim()) {
+      throw new Error('OpenAI API key is required');
     }
 
     let systemPrompt = `You are an advanced writing assistant. Your goal is to provide highly useful and context-aware suggestions.
@@ -112,7 +152,7 @@ export class OpenAIService {
     ];
 
     try {
-      const responseString = await this.makeRequest(messages, model);
+      const responseString = await this.makeRequest(messages, apiKey, model);
       
       const suggestions = JSON.parse(responseString);
       
