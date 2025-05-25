@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Editor from '@/components/Editor';
-import SuggestionPanel from '@/components/SuggestionPanel';
-import { type Suggestion } from '@/components/SuggestionPanel';
+import SuggestionPanel, { type Suggestion } from '@/components/SuggestionPanel';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDocuments } from '@/hooks/useDocuments';
@@ -23,6 +22,7 @@ const EditorPage = () => {
   const [lastSavedContent, setLastSavedContent] = useState("");
   const [lastSavedTitle, setLastSavedTitle] = useState("");
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -37,7 +37,6 @@ const EditorPage = () => {
     createDocumentWithId,
   } = useDocuments();
 
-  // Use AI suggestions hook
   const {
     suggestions,
     isGenerating,
@@ -45,6 +44,27 @@ const EditorPage = () => {
     removeSuggestion,
     hasApiKey,
   } = useAISuggestions({ content, enabled: aiPanelOpen, documentTitle });
+
+  // useEffect to log suggestion data for debugging
+  useEffect(() => {
+    console.log("AI Suggestions Hook Data:", {
+      suggestions,
+      isGenerating,
+      aiError,
+      hasApiKey,
+      aiPanelOpen,
+    });
+    // Check if any suggestions have position data
+    if (suggestions && suggestions.length > 0) {
+      suggestions.forEach(s => {
+        if (!s.position) {
+          console.warn(`Suggestion ID ${s.id} is missing position data.`);
+        } else {
+          console.log(`Suggestion ID ${s.id} has position:`, s.position);
+        }
+      });
+    }
+  }, [suggestions, isGenerating, aiError, hasApiKey, aiPanelOpen]);
 
   // Load document when component mounts or documentId changes
   useEffect(() => {
@@ -106,12 +126,17 @@ const EditorPage = () => {
     }
   };
 
-  const handleAcceptSuggestion = (suggestion: Suggestion) => {
+  const handleAcceptSuggestion = (suggestionToAccept: Suggestion) => {
+    if (!suggestionToAccept) return;
     let newContent = content;
-    newContent = newContent.replace(suggestion.originalText, suggestion.suggestedText);
+    
+    // Apply the change
+    newContent = newContent.replace(suggestionToAccept.originalText, suggestionToAccept.suggestedText);
     setContent(newContent);
     
-    removeSuggestion(suggestion.id);
+    // Remove from the list of available suggestions
+    removeSuggestion(suggestionToAccept.id); 
+    setSelectedSuggestion(null); // Clear the selected suggestion
     
     toast({
       title: "Suggestion accepted",
@@ -119,13 +144,25 @@ const EditorPage = () => {
     });
   };
 
-  const handleRejectSuggestion = (suggestion: Suggestion) => {
-    removeSuggestion(suggestion.id);
+  const handleRejectSuggestion = (suggestionToReject: Suggestion) => {
+    if (!suggestionToReject) return;
+    
+    // Remove from the list of available suggestions
+    removeSuggestion(suggestionToReject.id);
+    setSelectedSuggestion(null); // Clear the selected suggestion
     
     toast({
       title: "Suggestion rejected",
       description: "The suggestion has been dismissed.",
     });
+  };
+
+  const handleSuggestionIndicatorClick = (suggestion: Suggestion) => {
+    setSelectedSuggestion(suggestion);
+    // Optionally, ensure the AI panel is open when a dot is clicked
+    if (!aiPanelOpen) {
+      setAiPanelOpen(true);
+    }
   };
 
   const handleToggleBold = () => {
@@ -134,6 +171,7 @@ const EditorPage = () => {
 
   const handleToggleItalic = () => {
     document.execCommand('italic', false, undefined);
+    
   };
 
   const handleToggleUnderline = () => {
@@ -224,7 +262,16 @@ const EditorPage = () => {
             </div>
             <Button 
               variant={aiPanelOpen ? "secondary" : "outline"} 
-              onClick={() => setAiPanelOpen(!aiPanelOpen)}
+              onClick={() => {
+                const newAiPanelOpenState = !aiPanelOpen;
+                setAiPanelOpen(newAiPanelOpenState);
+                // if (!newAiPanelOpenState) { // If closing panel
+                //   setSelectedSuggestion(null); // Clear selection when hiding panel
+                // }
+                // Let's always clear selection when toggling panel for simplicity,
+                // or rely on user clicking a dot again if they re-open.
+                setSelectedSuggestion(null);
+              }}
               className="text-xs sm:text-sm"
             >
               {aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
@@ -236,22 +283,27 @@ const EditorPage = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Main Editor - Takes full width when AI panel is closed */}
         <div className={`flex-1 overflow-auto p-6 md:p-8 ${!aiPanelOpen && "w-full"}`}>
-          <Editor content={content} onContentChange={setContent} />
+          <Editor 
+            content={content} 
+            onContentChange={setContent}
+            suggestions={suggestions} // Pass all suggestions to Editor
+            onSuggestionIndicatorClick={handleSuggestionIndicatorClick} // Pass handler for dot clicks
+          />
         </div>
         
         {/* AI Suggestions Panel */}
         {aiPanelOpen && (
           <aside className={`bg-light-gray border-l border-border ${isMobile ? 'fixed inset-y-0 right-0 z-20 w-3/4' : 'w-80 lg:w-96'} overflow-y-auto`}>
             <div className="sticky top-0 bg-light-gray p-4 border-b border-border">
-              <h2 className="font-medium text-dark-gray">AI Suggestions</h2>
+              <h2 className="font-medium text-dark-gray">AI Suggestion</h2> {/* Changed title */}
               <p className="text-xs text-muted-foreground mt-1">
-                AI will suggest improvements as you write
+                {selectedSuggestion ? "Details for the selected suggestion." : "Click an indicator in the text to see a suggestion."}
               </p>
             </div>
             <SuggestionPanel 
-              suggestions={suggestions}
-              onAcceptSuggestion={handleAcceptSuggestion}
-              onRejectSuggestion={handleRejectSuggestion}
+              suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel
+              onAcceptSuggestion={handleAcceptSuggestion} // Add this
+              onRejectSuggestion={handleRejectSuggestion} // Add this
             />
           </aside>
         )}

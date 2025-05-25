@@ -122,11 +122,6 @@ export const useDocuments = () => {
           prev.map(doc => doc.id === id ? data : doc)
         )
         
-        toast({
-          title: "Document updated",
-          description: "Your changes have been saved.",
-        })
-        
         return data
       } else {
         // Create new document
@@ -146,11 +141,6 @@ export const useDocuments = () => {
         }
         setCurrentDocument(data)
         setDocuments(prev => [data, ...prev])
-        
-        toast({
-          title: "Document saved",
-          description: "Your document has been created.",
-        })
         
         return data
       }
@@ -244,11 +234,6 @@ export const useDocuments = () => {
         } else {
           return [data, ...prev]
         }
-      })
-      
-      toast({
-        title: "Document created",
-        description: "Your document has been created.",
       })
       
       return data

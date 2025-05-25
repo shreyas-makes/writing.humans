@@ -1,7 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { OpenAIService, type ParsedSuggestion } from '@/lib/openai';
+import { OpenAIService } from '@/lib/openai';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { type Suggestion } from '@/components/SuggestionPanel';
+
+// Helper function to find the position of text within content
+function findTextPosition(content: string, searchText: string): { start: number; end: number } | undefined {
+  // Convert HTML content to plain text for position calculation
+  const plainText = content.replace(/<[^>]*>?/gm, '');
+  const index = plainText.indexOf(searchText);
+  
+  if (index === -1) {
+    return undefined;
+  }
+  
+  return {
+    start: index,
+    end: index + searchText.length
+  };
+}
 
 interface UseAISuggestionsProps {
   content: string;
@@ -43,18 +59,25 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
         }
       });
 
-      // Convert AI suggestions to our Suggestion format
-      const newSuggestions: Suggestion[] = aiSuggestions.map((suggestion, index) => ({
-        id: `${Date.now()}-${index}`,
-        originalText: suggestion.originalText,
-        suggestedText: suggestion.suggestedText,
-        explanation: suggestion.explanation,
-      }));
+      // Convert AI suggestions to our Suggestion format with position data
+      const newSuggestions: Suggestion[] = aiSuggestions.map((suggestion, index) => {
+        // Find the position of the original text in the content
+        const position = findTextPosition(textContent, suggestion.originalText);
+        
+        return {
+          id: `${Date.now()}-${index}`,
+          originalText: suggestion.originalText,
+          suggestedText: suggestion.suggestedText,
+          explanation: suggestion.explanation,
+          position: position,
+        };
+      });
 
-      // Filter out suggestions that already exist or where original text doesn't exist in content
+      // Filter out suggestions that already exist, where original text doesn't exist in content, or that lack position data
       const filteredSuggestions = newSuggestions.filter(newSuggestion =>
         !suggestions.some(existing => existing.originalText === newSuggestion.originalText) &&
-        plainTextContent.includes(newSuggestion.originalText)
+        plainTextContent.includes(newSuggestion.originalText) &&
+        newSuggestion.position !== undefined
       );
 
       if (filteredSuggestions.length > 0) {

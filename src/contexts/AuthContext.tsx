@@ -58,12 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null)
         setLoading(false)
 
-        if (event === 'SIGNED_IN') {
-          toast({
-            title: "Welcome!",
-            description: "You have been signed in successfully.",
-          })
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
             description: "You have been signed out successfully.",
