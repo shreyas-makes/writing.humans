@@ -80,7 +80,8 @@ export class OpenAIService {
   }: SuggestionRequest): Promise<ParsedSuggestion[]> {
     const plainText = content.replace(/<[^>]*>?/gm, '');
 
-    if (plainText.length < 30) { 
+    // Allow shorter content for first-time users (minimum 15 characters)
+    if (plainText.length < 15) { 
       return [];
     }
 
@@ -91,7 +92,13 @@ export class OpenAIService {
     let systemPrompt = `You are an advanced writing assistant. Your goal is to provide highly useful and context-aware suggestions.
     Format your response as a JSON array of suggestion objects. Each object must have "originalText", "suggestedText", and "explanation".
     If no improvements are genuinely needed for the given text and context, return an empty array.
-    Consider the overall document context if provided.`;
+    Consider the overall document context if provided.
+    
+    For shorter text snippets (early-stage writing), focus on foundational improvements like:
+    - Basic grammar and punctuation
+    - Sentence structure and clarity
+    - Word choice improvements
+    - Simple style enhancements`;
 
     let userPromptContent = `The user is working on a document`;
     if (documentContext?.title) {

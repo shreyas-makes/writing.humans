@@ -116,8 +116,36 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
       isPlaceholder: plainTextContent === "Start writing your document here..."
     });
 
-    if (plainTextContent === "Start writing your document here..." || plainTextContent.length < 30) {
-      console.log('❌ Content too short or is placeholder');
+    // Check if this is the first suggestion (no existing suggestions)
+    const isFirstSuggestion = suggestions.length === 0;
+    
+    // For first suggestion: allow shorter content (2+ lines), for subsequent: require 30+ characters
+    const minContentLength = isFirstSuggestion ? 20 : 30; // Lower threshold for first suggestion
+    
+    if (isFirstSuggestion) {
+      // Same logic as in the useEffect for consistency
+      const lineBreaks = plainTextContent.split('\n').filter(line => line.trim().length > 0);
+      const paragraphs = textContent.match(/<p[^>]*>.*?<\/p>/gi) || [];
+      const divs = textContent.match(/<div[^>]*>.*?<\/div>/gi) || [];
+      const blockElements = paragraphs.length + divs.length;
+      
+      const hasEnoughLines = lineBreaks.length >= 2 || 
+                           blockElements >= 2 || 
+                           plainTextContent.length >= 80;
+      
+      if (!hasEnoughLines) {
+        console.log('❌ First suggestion: insufficient content structure');
+        return;
+      }
+    }
+
+    if (plainTextContent === "Start writing your document here..." || 
+        plainTextContent.length < minContentLength) {
+      console.log('❌ Content too short or is placeholder:', {
+        isFirstSuggestion,
+        minContentLength,
+        actualLength: plainTextContent.length
+      });
       return;
     }
 
@@ -266,9 +294,47 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
   // Update content snapshot when content changes and trigger initial suggestions
   useEffect(() => {
     const currentContentSnapshot = content.replace(/<[^>]*>?/gm, '').trim();
-    if (currentContentSnapshot.length > 30 && lastContentSnapshot === '') {
-      // Initialize the snapshot on first meaningful content and generate initial suggestions
-      console.log('📝 First meaningful content detected, generating initial suggestions');
+    
+    // Check if this is the first meaningful content (for faster first suggestion)
+    const isFirstMeaningfulContent = lastContentSnapshot === '' && 
+      currentContentSnapshot !== "Start writing your document here..." &&
+      currentContentSnapshot.length > 0;
+    
+    // Count lines for first suggestion trigger (2 lines minimum)
+    // Handle both actual line breaks and separate paragraphs/elements
+    const lineBreaks = currentContentSnapshot.split('\n').filter(line => line.trim().length > 0);
+    const paragraphs = content.match(/<p[^>]*>.*?<\/p>/gi) || [];
+    const divs = content.match(/<div[^>]*>.*?<\/div>/gi) || [];
+    const blockElements = paragraphs.length + divs.length;
+    
+    // Consider it as having enough lines if either:
+    // 1. There are actual line breaks (2+), or 
+    // 2. There are multiple block elements (2+), or
+    // 3. Content is long enough (80+ chars, roughly 2 lines worth)
+    const hasEnoughLinesForFirstSuggestion = lineBreaks.length >= 2 || 
+                                           blockElements >= 2 || 
+                                           currentContentSnapshot.length >= 80;
+    
+    // For first suggestion: trigger after 2 lines of content
+    if (isFirstMeaningfulContent && hasEnoughLinesForFirstSuggestion) {
+      console.log('🚀 First suggestion trigger: 2+ lines detected, generating initial suggestions', {
+        lineBreaks: lineBreaks.length,
+        blockElements: blockElements,
+        contentLength: currentContentSnapshot.length,
+        contentPreview: currentContentSnapshot.substring(0, 50) + '...'
+      });
+      setLastContentSnapshot(currentContentSnapshot);
+      
+      // Generate suggestions immediately for first-time users
+      if (enabled && settings.openai_api_key) {
+        setTimeout(() => {
+          generateSuggestions(content, documentTitle);
+        }, 1000); // Faster 1 second delay for first suggestion
+      }
+    }
+    // For subsequent suggestions: use the original 30 character threshold
+    else if (currentContentSnapshot.length > 30 && lastContentSnapshot === '') {
+      console.log('📝 First meaningful content detected (fallback), generating initial suggestions');
       setLastContentSnapshot(currentContentSnapshot);
       
       // Generate suggestions after a short delay for the first meaningful content

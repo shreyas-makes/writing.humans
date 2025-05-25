@@ -196,8 +196,8 @@ const Landing = () => {
 
         // Create the indicator element positioned relative to the container
         const indicator = document.createElement('div');
-        indicator.className = `suggestion-indicator absolute w-4 h-4 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-200 z-10 shadow-md ${
-          selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-300 ring-offset-1' : ''
+        indicator.className = `suggestion-indicator absolute w-2.5 h-2.5 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-200 z-10 shadow-md ${
+          selectedSuggestion?.id === suggestion.id ? 'ring-1 ring-blue-300 ring-offset-1' : ''
         }`;
         indicator.title = 'Click to see AI suggestion';
         
@@ -213,9 +213,9 @@ const Landing = () => {
         const editorRect = editorRef.current!.getBoundingClientRect();
         
         // Calculate position relative to the container
-        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 6;
+        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 5;
         // Position the indicator in the left margin of the editor, giving it more breathing room
-        const relativeLeft = editorRect.left - containerRect.left - 24;
+        const relativeLeft = editorRect.left - containerRect.left - 20;
         
         indicator.style.left = `${relativeLeft}px`;
         indicator.style.top = `${relativeTop}px`;
@@ -319,6 +319,32 @@ const Landing = () => {
                     <p className="text-gray-700 mb-4">
                       It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
                     </p>
+
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
+
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
+
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
+
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
+
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    </p>
                     
                     <p className="text-gray-700 mb-4">
                       {renderTextWithSuggestions('demo-1')} The AI will suggest making it more concise and direct.
@@ -361,7 +387,7 @@ const Landing = () => {
                   <div className="h-full flex items-center justify-center p-4">
                     <div className="text-center text-muted-foreground">
                       <p>No suggestion selected</p>
-                      <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the left margin to view details.</p>
+                      <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mx-1"></span> in the left margin to view details.</p>
                     </div>
                   </div>
                 )}
