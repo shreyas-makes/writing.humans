@@ -44,7 +44,7 @@ const EditorPage = () => {
     error: aiError,
     removeSuggestion,
     hasApiKey,
-  } = useAISuggestions({ content, enabled: aiPanelOpen });
+  } = useAISuggestions({ content, enabled: aiPanelOpen, documentTitle });
 
   // Load document when component mounts or documentId changes
   useEffect(() => {
