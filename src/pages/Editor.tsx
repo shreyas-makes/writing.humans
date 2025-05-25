@@ -8,8 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/contexts/AuthContext';
-import { FileText, ArrowLeft } from 'lucide-react';
+import { useAISuggestions } from '@/hooks/useAISuggestions';
+import { FileText, ArrowLeft, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const EditorPage = () => {
   const { documentId } = useParams<{ documentId: string }>();
@@ -17,7 +19,6 @@ const EditorPage = () => {
   const [documentTitle, setDocumentTitle] = useState("Untitled Document");
   const [content, setContent] = useState("<p>Start writing your document here...</p>");
   const [aiPanelOpen, setAiPanelOpen] = useState(true);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedContent, setLastSavedContent] = useState("");
   const [lastSavedTitle, setLastSavedTitle] = useState("");
@@ -35,9 +36,19 @@ const EditorPage = () => {
     createDocumentWithId,
   } = useDocuments();
 
+  // Use AI suggestions hook
+  const {
+    suggestions,
+    isGenerating,
+    error: aiError,
+    removeSuggestion,
+    hasApiKey,
+  } = useAISuggestions({ content, enabled: aiPanelOpen });
+
   // Load document when component mounts or documentId changes
   useEffect(() => {
-    if (documentId) {
+    if (documentId && user) {
+      console.log('Loading document for authenticated user:', user.email);
       loadDocument(documentId).then((result) => {
         if (result && typeof result === 'object' && 'notFound' in result) {
           // Document not found, create a new one
@@ -46,7 +57,7 @@ const EditorPage = () => {
         }
       });
     }
-  }, [documentId, loadDocument, createDocumentWithId]);
+  }, [documentId, loadDocument, createDocumentWithId, user]);
 
   // Check for unsaved changes
   useEffect(() => {
@@ -76,60 +87,6 @@ const EditorPage = () => {
     }
   }, [currentDocument]);
 
-  // Mock function to generate AI suggestions based on content
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (content.trim() !== "<p>Start writing your document here...</p>" && content.length > 50) {
-        generateMockSuggestion(content);
-      }
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [content]);
-
-  const generateMockSuggestion = (currentContent: string) => {
-    if (suggestions.length >= 3) return;
-    
-    let plainText = currentContent.replace(/<[^>]*>?/gm, '');
-    
-    if (plainText.length < 50) return;
-    
-    const startIdx = Math.floor(Math.random() * (plainText.length - 30));
-    const endIdx = Math.min(startIdx + Math.floor(Math.random() * 20) + 10, plainText.length);
-    const extractedText = plainText.substring(startIdx, endIdx);
-    
-    if (suggestions.some(s => s.originalText === extractedText)) return;
-    if (extractedText.length < 5) return;
-    
-    const suggestionsOptions = [
-      {
-        suggestedText: extractedText.charAt(0).toUpperCase() + extractedText.slice(1),
-        explanation: "Consider capitalizing the first letter for better readability."
-      },
-      {
-        suggestedText: extractedText.replace(/\s+/g, ' ').trim(),
-        explanation: "I noticed extra spaces. This is a cleaner version."
-      },
-      {
-        suggestedText: extractedText.replace(/\b(very|really)\b/gi, 'significantly'),
-        explanation: "Replace vague intensifiers with more specific language."
-      }
-    ];
-    
-    const suggestionOption = suggestionsOptions[Math.floor(Math.random() * suggestionsOptions.length)];
-    
-    if (extractedText !== suggestionOption.suggestedText) {
-      const newSuggestion: Suggestion = {
-        id: Date.now().toString(),
-        originalText: extractedText,
-        suggestedText: suggestionOption.suggestedText,
-        explanation: suggestionOption.explanation
-      };
-      
-      setSuggestions(prev => [...prev, newSuggestion]);
-    }
-  };
-
   const handleSave = async () => {
     if (!documentId) return;
     
@@ -146,7 +103,7 @@ const EditorPage = () => {
     newContent = newContent.replace(suggestion.originalText, suggestion.suggestedText);
     setContent(newContent);
     
-    setSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
+    removeSuggestion(suggestion.id);
     
     toast({
       title: "Suggestion accepted",
@@ -155,7 +112,7 @@ const EditorPage = () => {
   };
 
   const handleRejectSuggestion = (suggestion: Suggestion) => {
-    setSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
+    removeSuggestion(suggestion.id);
     
     toast({
       title: "Suggestion rejected",
@@ -185,12 +142,28 @@ const EditorPage = () => {
     navigate('/');
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Loading document...</p>
+          <p className="text-gray-500">
+            {authLoading ? 'Checking authentication...' : 'Loading document...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 mb-4">You need to be signed in to access this document.</p>
+          <Button onClick={() => navigate('/login')}>
+            Sign In
+          </Button>
         </div>
       </div>
     );
