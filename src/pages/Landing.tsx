@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, FileText } from 'lucide-react';
@@ -12,8 +12,106 @@ interface DemoSuggestion {
   explanation: string;
 }
 
+// Helper functions for diffing (copied from SuggestionPanel)
+function splitText(text: string): string[] {
+  return text.match(/(\w+)|(\s+)|([^\w\s])/g) || [];
+}
+
+function computeLCS(arr1: string[], arr2: string[]): string[] {
+  const m = arr1.length;
+  const n = arr2.length;
+  const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (arr1[i - 1] === arr2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  const lcs: string[] = [];
+  let i = m;
+  let j = n;
+  while (i > 0 && j > 0) {
+    if (arr1[i - 1] === arr2[j - 1]) {
+      lcs.unshift(arr1[i - 1]);
+      i--;
+      j--;
+    } else if (dp[i - 1][j] > dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return lcs;
+}
+
+function generateDiff(originalWords: string[], suggestedWords: string[], lcs: string[]): Array<[number, string]> {
+  const diff: Array<[number, string]> = [];
+  let ptrOriginal = 0;
+  let ptrSuggested = 0;
+  let ptrLCS = 0;
+
+  while (ptrOriginal < originalWords.length || ptrSuggested < suggestedWords.length) {
+    const lcsWord = ptrLCS < lcs.length ? lcs[ptrLCS] : null;
+    const originalWord = ptrOriginal < originalWords.length ? originalWords[ptrOriginal] : null;
+    const suggestedWord = ptrSuggested < suggestedWords.length ? suggestedWords[ptrSuggested] : null;
+
+    if (originalWord !== null && originalWord === lcsWord && suggestedWord !== null && suggestedWord === lcsWord) {
+      diff.push([0, originalWord]);
+      ptrOriginal++;
+      ptrSuggested++;
+      ptrLCS++;
+    } else if (originalWord !== null && (lcsWord === null || originalWord !== lcsWord || suggestedWord !== lcsWord)) {
+      if (suggestedWord !== null && suggestedWord === lcsWord) {
+         diff.push([-1, originalWord]);
+         ptrOriginal++;
+      } else {
+         diff.push([-1, originalWord]);
+         ptrOriginal++;
+      }
+    } else if (suggestedWord !== null && (lcsWord === null || suggestedWord !== lcsWord)) {
+      diff.push([1, suggestedWord]);
+      ptrSuggested++;
+    } else {
+      break; 
+    }
+  }
+  return diff;
+}
+
+const DiffDisplay = ({ originalText, suggestedText }: { originalText: string; suggestedText: string }) => {
+  const originalWords = splitText(originalText);
+  const suggestedWords = splitText(suggestedText);
+  const lcs = computeLCS(originalWords, suggestedWords);
+  const diffs = generateDiff(originalWords, suggestedWords, lcs);
+
+  return (
+    <div className="text-xs whitespace-pre-wrap p-2 rounded-md bg-muted dark:bg-zinc-800 leading-relaxed">
+      {diffs.map(([type, text], index) => {
+        if (type === 0) { // Common
+          return <span key={index}>{text}</span>;
+        } else if (type === -1) { // Deleted
+          if (text.trim() === '' && text.includes('\n')) return <span key={index}>{text}</span>;
+          if (text.trim() === '') return <span key={index}>{text}</span>;
+          return <span key={index} className="bg-red-500/20 dark:bg-red-500/30 line-through decoration-red-500/70 dark:decoration-red-400/70 rounded-sm px-0.5 mx-[-0.5px]">{text}</span>;
+        } else { // Added (type === 1)
+          if (text.trim() === '' && text.includes('\n')) return <span key={index}>{text}</span>;
+          if (text.trim() === '') return <span key={index}>{text}</span>;
+          return <span key={index} className="bg-green-500/20 dark:bg-green-500/30 rounded-sm px-0.5 mx-[-0.5px]">{text}</span>;
+        }
+      })}
+    </div>
+  );
+};
+
 const Landing = () => {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   // Static demo suggestions
   const demoSuggestions: DemoSuggestion[] = [
@@ -39,6 +137,57 @@ const Landing = () => {
 
   const [selectedSuggestion, setSelectedSuggestion] = useState<DemoSuggestion>(demoSuggestions[0]);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState<string[]>([]);
+
+  // Position suggestion indicators using the Editor component logic
+  useEffect(() => {
+    if (!editorRef.current || !containerRef.current) return;
+
+    // Remove existing suggestion indicators
+    const existingIndicators = containerRef.current.querySelectorAll('.suggestion-indicator');
+    existingIndicators.forEach(indicator => indicator.remove());
+
+    // Add new suggestion indicators for non-accepted suggestions
+    demoSuggestions.forEach(suggestion => {
+      if (acceptedSuggestions.includes(suggestion.id)) return;
+
+      try {
+        // Find the span element with the suggestion data
+        const suggestionSpan = editorRef.current!.querySelector(`[data-suggestion-id="${suggestion.id}"]`);
+        if (!suggestionSpan || !containerRef.current) return;
+
+        // Create the indicator element positioned relative to the container
+        const indicator = document.createElement('div');
+        indicator.className = `suggestion-indicator absolute w-3 h-3 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 transition-colors z-10 ${
+          selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-300' : ''
+        }`;
+        indicator.title = 'Click to see AI suggestion';
+        
+        // Add click handler
+        indicator.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleSuggestionClick(suggestion);
+        });
+
+        // Position the indicator using the Editor component logic
+        const targetRect = suggestionSpan.getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const editorRect = editorRef.current!.getBoundingClientRect();
+        
+        // Calculate position relative to the container
+        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 6;
+        // Position the indicator closer to the editor content, in the right margin but not overlapping with the panel
+        const relativeLeft = editorRect.right - containerRect.left + 8;
+        
+        indicator.style.left = `${relativeLeft}px`;
+        indicator.style.top = `${relativeTop}px`;
+        
+        // Add to the container so it scrolls with the content
+        containerRef.current.appendChild(indicator);
+      } catch (error) {
+        console.warn('Failed to place suggestion indicator:', error);
+      }
+    });
+  }, [selectedSuggestion, acceptedSuggestions, demoSuggestions]);
 
   const handleSuggestionClick = (suggestion: DemoSuggestion) => {
     setSelectedSuggestion(suggestion);
@@ -77,20 +226,13 @@ const Landing = () => {
 
     const isAccepted = acceptedSuggestions.includes(suggestionId);
     const displayText = isAccepted ? suggestion.suggestedText : suggestion.originalText;
-    const isSelected = selectedSuggestion?.id === suggestionId;
 
     return (
-      <span className="relative">
+      <span 
+        className="inline-block"
+        data-suggestion-id={suggestionId}
+      >
         {displayText}
-        {!isAccepted && (
-          <button
-            onClick={() => handleSuggestionClick(suggestion)}
-            className={`ml-2 w-3 h-3 rounded-full cursor-pointer transition-colors ${
-              isSelected ? 'bg-blue-600' : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-            title="Click to see AI suggestion"
-          />
-        )}
       </span>
     );
   };
@@ -123,101 +265,78 @@ const Landing = () => {
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Editor Section */}
               <div className="flex-1">
-                <Card className="shadow-lg border-0 bg-white">
-                  <CardContent className="p-4 md:p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="ml-4 text-sm text-gray-500">Demo Document</span>
-                    </div>
-                    <div className="min-h-[500px] border border-gray-200 rounded-lg p-6 bg-white">
-                      <div className="prose prose-lg max-w-none">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                          Transform Your Writing with AI-Powered Assistance
-                        </h1>
-                        
-                        <p className="text-gray-700 mb-4">
-                          Our intelligent writing assistant helps you create clear, engaging content that resonates with your audience. Whether you're writing blog posts, marketing copy, or professional documents, our AI provides real-time suggestions to improve clarity, conciseness, and impact.
-                        </p>
-                        
-                        <p className="text-gray-700 mb-4">
-                          {renderTextWithSuggestions('demo-1')} The AI will suggest making it more concise and direct.
-                        </p>
-                        
-                        <p className="text-gray-700 mb-4">
-                          {renderTextWithSuggestions('demo-2')} Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
-                        </p>
-                        
-                        <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3">
-                          Key Benefits
-                        </h2>
-                        
-                        <ul className="text-gray-700 mb-4 space-y-1">
-                          <li>• Real-time AI suggestions for clarity and style</li>
-                          <li>• Grammar and readability improvements</li>
-                          <li>• Tone and voice optimization</li>
-                          <li>• Professional writing enhancement</li>
-                        </ul>
-                        
-                        <p className="text-gray-700">
-                          {renderTextWithSuggestions('demo-3')}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="ml-4 text-sm text-gray-500">Demo Document</span>
+                </div>
+                <div ref={containerRef} className="min-h-[500px] border border-gray-200 rounded-lg bg-white relative shadow-lg">
+                  <div ref={editorRef} className="prose prose-lg max-w-none p-6">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                      Transform Your Writing with AI-Powered Assistance
+                    </h1>
+                    
+                    <p className="text-gray-700 mb-4">
+                      Our intelligent writing assistant helps you create clear, engaging content that resonates with your audience. Whether you're writing blog posts, marketing copy, or professional documents, our AI provides real-time suggestions to improve clarity, conciseness, and impact.
+                    </p>
+                    
+                    <p className="text-gray-700 mb-4">
+                      {renderTextWithSuggestions('demo-1')} The AI will suggest making it more concise and direct.
+                    </p>
+                    
+                    <p className="text-gray-700 mb-4">
+                      {renderTextWithSuggestions('demo-2')} Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
+                    </p>
+                    
+                    <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3">
+                      Key Benefits
+                    </h2>
+                    
+                    <ul className="text-gray-700 mb-4 space-y-1">
+                      <li>• Real-time AI suggestions for clarity and style</li>
+                      <li>• Grammar and readability improvements</li>
+                      <li>• Tone and voice optimization</li>
+                      <li>• Professional writing enhancement</li>
+                    </ul>
+                    
+                    <p className="text-gray-700">
+                      {renderTextWithSuggestions('demo-3')}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* AI Suggestions Panel */}
-              <div className="w-full lg:w-80">
-                <Card className="shadow-lg border-0 bg-white h-fit">
-                  <CardContent className="p-4 md:p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">AI Suggestions</h3>
-                    {selectedSuggestion ? (
-                      <div className="space-y-4">
-                        <div>
-                          <Badge variant="outline" className="mb-2">
-                            AI Suggestion
-                          </Badge>
-                          <p className="text-sm text-gray-600 mb-3">
-                            {selectedSuggestion.explanation}
-                          </p>
+              <Card className="w-full lg:w-80 h-fit">
+              
+                {selectedSuggestion ? (
+                  <div className="flex flex-col gap-3">
+                    <Card key={selectedSuggestion.id} className="space-y-2">
+                      <CardHeader className="pb-1">
+                      </CardHeader>
+                      <CardContent className="pt-0 space-y-4">
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">Proposed Change:</p>
+                          <DiffDisplay originalText={selectedSuggestion.originalText} suggestedText={selectedSuggestion.suggestedText} />
                         </div>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 mb-1">Original:</p>
-                            <p className="text-sm bg-red-50 p-3 rounded border-l-2 border-red-200">
-                              {selectedSuggestion.originalText}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 mb-1">Suggested:</p>
-                            <p className="text-sm bg-green-50 p-3 rounded border-l-2 border-green-200">
-                              {selectedSuggestion.suggestedText}
-                            </p>
-                          </div>
+                        
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
+                          <p className="text-xs">{selectedSuggestion.explanation}</p>
                         </div>
-                        <div className="flex gap-2 pt-2">
-                          <Button size="sm" className="flex-1" onClick={handleAcceptSuggestion}>
-                            Accept
-                          </Button>
-                          <Button size="sm" variant="outline" className="flex-1" onClick={handleRejectSuggestion}>
-                            Reject
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-sm text-gray-500">
-                          Click a blue dot in the text to see an AI suggestion
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center p-4">
+                    <div className="text-center text-muted-foreground">
+                      <p>No suggestion selected</p>
+                      <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
+                    </div>
+                  </div>
+                )}
+              </Card>
             </div>
           </div>
         </div>
@@ -226,4 +345,4 @@ const Landing = () => {
   );
 };
 
-export default Landing; 
+export default Landing;
