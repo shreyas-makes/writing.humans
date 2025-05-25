@@ -22,6 +22,7 @@ const EditorPage = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedContent, setLastSavedContent] = useState("");
   const [lastSavedTitle, setLastSavedTitle] = useState("");
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -63,15 +64,18 @@ const EditorPage = () => {
   useEffect(() => {
     const hasChanges = content !== lastSavedContent || documentTitle !== lastSavedTitle;
     setHasUnsavedChanges(hasChanges);
-  }, [content, documentTitle, lastSavedContent, lastSavedTitle]);
+    if (hasChanges && saveStatus === 'saved') {
+      setSaveStatus('unsaved');
+    }
+  }, [content, documentTitle, lastSavedContent, lastSavedTitle, saveStatus]);
 
-  // Auto-save every 30 seconds if there are unsaved changes
+  // Auto-save every 2 seconds if there are unsaved changes
   useEffect(() => {
     if (!hasUnsavedChanges || !documentId) return;
 
     const autoSaveTimer = setTimeout(() => {
       handleSave();
-    }, 30000); // 30 seconds
+    }, 2000); // 2 seconds for more responsive auto-save
 
     return () => clearTimeout(autoSaveTimer);
   }, [hasUnsavedChanges, content, documentTitle, documentId]);
@@ -90,11 +94,15 @@ const EditorPage = () => {
   const handleSave = async () => {
     if (!documentId) return;
     
+    setSaveStatus('saving');
     const savedDoc = await saveDocument(documentTitle, content, documentId);
     if (savedDoc) {
       setLastSavedTitle(documentTitle);
       setLastSavedContent(content);
       setHasUnsavedChanges(false);
+      setSaveStatus('saved');
+    } else {
+      setSaveStatus('unsaved');
     }
   };
 
@@ -133,13 +141,21 @@ const EditorPage = () => {
   };
 
   const handleBackToHome = () => {
-    if (hasUnsavedChanges) {
-      const confirmExit = window.confirm("You have unsaved changes. Do you want to save before leaving?");
-      if (confirmExit) {
-        handleSave();
-      }
-    }
+    // No need for confirmation since auto-save handles everything
     navigate('/');
+  };
+
+  const getSaveStatusText = () => {
+    switch (saveStatus) {
+      case 'saving':
+        return <span className="text-xs text-blue-500 font-medium">• Saving...</span>;
+      case 'unsaved':
+        return <span className="text-xs text-orange-500 font-medium">• Unsaved</span>;
+      case 'saved':
+        return <span className="text-xs text-green-500 font-medium">• Saved</span>;
+      default:
+        return null;
+    }
   };
 
   if (authLoading || isLoading) {
@@ -192,20 +208,9 @@ const EditorPage = () => {
               className="bg-transparent border-none outline-none focus:ring-0 text-lg font-medium"
               aria-label="Document title"
             />
-            {hasUnsavedChanges && (
-              <span className="text-xs text-orange-500 font-medium">• Unsaved</span>
-            )}
+            {getSaveStatusText()}
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              onClick={handleSave}
-              size="sm"
-              disabled={isSaving}
-              className="flex items-center gap-2"
-            >
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>
-
             <div className="hidden sm:flex items-center border-r pr-3 mr-3">
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleToggleBold}>
                 <span className="font-bold">B</span>

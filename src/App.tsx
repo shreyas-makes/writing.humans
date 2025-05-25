@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ApiKeyProtectedRoute from "@/components/ApiKeyProtectedRoute";
 import Home from "./pages/Home";
 import EditorPage from "./pages/Editor";
 import Settings from "./pages/Settings";
@@ -30,21 +31,23 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             
-            {/* Protected routes */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            } />
-            <Route path="/editor/:documentId" element={
-              <ProtectedRoute>
-                <EditorPage />
-              </ProtectedRoute>
-            } />
+            {/* Settings route - requires auth but not API key */}
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Settings />
               </ProtectedRoute>
+            } />
+            
+            {/* Protected routes that require API key */}
+            <Route path="/" element={
+              <ApiKeyProtectedRoute>
+                <Home />
+              </ApiKeyProtectedRoute>
+            } />
+            <Route path="/editor/:documentId" element={
+              <ApiKeyProtectedRoute>
+                <EditorPage />
+              </ApiKeyProtectedRoute>
             } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
