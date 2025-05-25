@@ -144,10 +144,10 @@ const SuggestionPanel = ({
 }: SuggestionPanelProps) => {
   if (!suggestion) {
     return (
-      <div className="h-full flex items-center justify-center p-4">
-        <div className="text-center text-muted-foreground">
+      <div className="h-full flex items-end justify-center p-4">
+        <div className="text-center text-muted-foreground/70 text-xs pb-4">
           <p>No suggestion selected</p>
-          <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
+          <p className="mt-1">Click on a suggestion indicator <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
         </div>
       </div>
     );

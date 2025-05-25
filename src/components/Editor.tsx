@@ -7,9 +7,10 @@ interface EditorProps {
   onContentChange: (content: string) => void;
   suggestions?: Suggestion[];
   onSuggestionIndicatorClick?: (suggestion: Suggestion) => void;
+  blueIndicatorsVisible?: boolean;
 }
 
-const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndicatorClick }: EditorProps) => {
+const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndicatorClick, blueIndicatorsVisible = true }: EditorProps) => {
   const { toast } = useToast();
   const editorRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,9 @@ const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndica
     // Remove existing suggestion indicators
     const existingIndicators = containerRef.current.querySelectorAll('.suggestion-indicator');
     existingIndicators.forEach(indicator => indicator.remove());
+
+    // Only add indicators if they should be visible
+    if (!blueIndicatorsVisible) return;
 
     // Add new suggestion indicators
     suggestions.forEach(suggestion => {
@@ -103,7 +107,7 @@ const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndica
         console.warn('Failed to place suggestion indicator:', error);
       }
     });
-  }, [suggestions, onSuggestionIndicatorClick]);
+  }, [suggestions, onSuggestionIndicatorClick, blueIndicatorsVisible]);
 
   // Cleanup indicators when component unmounts
   useEffect(() => {

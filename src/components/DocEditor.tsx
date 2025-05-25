@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+
 import Header from './Header';
 import Editor from './Editor';
 import SuggestionPanel from './SuggestionPanel';
@@ -17,6 +19,7 @@ const DocEditor = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedContent, setLastSavedContent] = useState("");
   const [lastSavedTitle, setLastSavedTitle] = useState("");
+  const [blueIndicatorsVisible, setBlueIndicatorsVisible] = useState(true);
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -214,6 +217,8 @@ const DocEditor = () => {
         documentListOpen={documentListOpen}
         isSaving={isSaving}
         hasUnsavedChanges={hasUnsavedChanges}
+        onToggleBlueIndicators={() => setBlueIndicatorsVisible(!blueIndicatorsVisible)}
+        blueIndicatorsVisible={blueIndicatorsVisible}
       />
       
       <div className="flex flex-1 overflow-hidden">
@@ -231,7 +236,11 @@ const DocEditor = () => {
         
         {/* Main Editor */}
         <div className={`flex-1 overflow-auto p-6 md:p-4 ${!aiPanelOpen && "w-full"}`}>
-          <Editor content={content} onContentChange={setContent} />
+          <Editor 
+            content={content} 
+            onContentChange={setContent}
+            blueIndicatorsVisible={blueIndicatorsVisible}
+          />
         </div>
         
         {/* AI Suggestions Panel */}
@@ -244,9 +253,7 @@ const DocEditor = () => {
               </p>
             </div>
             <SuggestionPanel 
-              suggestions={suggestions}
-              onAcceptSuggestion={handleAcceptSuggestion}
-              onRejectSuggestion={handleRejectSuggestion}
+              suggestion={suggestions.length > 0 ? suggestions[0] : null}
             />
           </aside>
         )}

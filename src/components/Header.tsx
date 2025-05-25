@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, Underline, Save, FileText, Loader2, User, LogOut, Settings } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Bold, Italic, Underline, Save, FileText, Loader2, User, LogOut, Settings, Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,8 @@ interface HeaderProps {
   isSaving: boolean;
   hasUnsavedChanges?: boolean;
   onLogoClick?: () => void;
+  onToggleBlueIndicators?: () => void;
+  blueIndicatorsVisible?: boolean;
 }
 
 const Header = ({ 
@@ -41,7 +44,9 @@ const Header = ({
   documentListOpen,
   isSaving,
   hasUnsavedChanges = false,
-  onLogoClick
+  onLogoClick,
+  onToggleBlueIndicators,
+  blueIndicatorsVisible = true
 }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -117,6 +122,15 @@ const Header = ({
           >
             {aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
           </Button>
+
+          {/* Blue Indicator Toggle */}
+          {onToggleBlueIndicators && (
+            <Switch
+              checked={blueIndicatorsVisible}
+              onCheckedChange={onToggleBlueIndicators}
+              className="data-[state=checked]:bg-blue-500"
+            />
+          )}
 
           {/* User Menu */}
           {user && (

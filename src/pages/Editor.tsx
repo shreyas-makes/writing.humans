@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAISuggestions } from '@/hooks/useAISuggestions';
 import { FileText, ArrowLeft, Settings, User, LogOut, Bold, Italic, Underline, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ const EditorPage = () => {
   const [lastSavedTitle, setLastSavedTitle] = useState("");
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
+  const [blueIndicatorsVisible, setBlueIndicatorsVisible] = useState(true);
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -289,6 +291,15 @@ const EditorPage = () => {
             >
               {aiPanelOpen ? <EyeOff size={16} /> : <Eye size={16} />}
             </Button>
+            
+            {/* Blue Indicator Toggle */}
+            <div className="flex items-center gap-2 border-l border-gray-200 pl-2 ml-2">
+              <Switch
+                checked={blueIndicatorsVisible}
+                onCheckedChange={setBlueIndicatorsVisible}
+                className="data-[state=checked]:bg-blue-500 scale-75"
+              />
+            </div>
             {/* Simplified User Menu */}
             {user && (
               <DropdownMenu>
@@ -312,6 +323,8 @@ const EditorPage = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            
           </div>
         </div>
       </header>
@@ -324,6 +337,7 @@ const EditorPage = () => {
             onContentChange={setContent}
             suggestions={suggestions} // Pass all suggestions to Editor
             onSuggestionIndicatorClick={handleSuggestionIndicatorClick} // Pass handler for dot clicks
+            blueIndicatorsVisible={blueIndicatorsVisible}
           />
         </div>
         
@@ -336,8 +350,6 @@ const EditorPage = () => {
             </div>
             <SuggestionPanel 
               suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel
-              onAcceptSuggestion={handleAcceptSuggestion}
-              onRejectSuggestion={handleRejectSuggestion}
             />
           </aside>
         )}

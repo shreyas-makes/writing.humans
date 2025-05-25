@@ -56,7 +56,12 @@ export const useUserSettings = () => {
       }
 
       if (data) {
-        setSettings(data);
+        // Compute has_openai_api_key based on whether openai_api_key has a value
+        const settingsWithComputedFields = {
+          ...data,
+          has_openai_api_key: !!(data.openai_api_key && data.openai_api_key.trim().length > 0)
+        };
+        setSettings(settingsWithComputedFields);
       } else {
         // No settings found, use defaults
         setSettings(defaultSettings);
@@ -81,11 +86,14 @@ export const useUserSettings = () => {
       setIsSaving(true);
       const updatedSettings = { ...settings, ...newSettings };
 
+      // Remove computed fields that shouldn't be saved to the database
+      const { has_openai_api_key, ...settingsToSave } = updatedSettings;
+
       const { data, error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: user.id,
-          ...updatedSettings,
+          ...settingsToSave,
         })
         .select()
         .single();
@@ -100,7 +108,13 @@ export const useUserSettings = () => {
         return false;
       }
 
-      setSettings(data);
+      // Compute has_openai_api_key for the returned data
+      const settingsWithComputedFields = {
+        ...data,
+        has_openai_api_key: !!(data.openai_api_key && data.openai_api_key.trim().length > 0)
+      };
+      
+      setSettings(settingsWithComputedFields);
       toast({
         title: "Settings saved",
         description: "Your settings have been updated successfully.",
@@ -126,10 +140,8 @@ export const useUserSettings = () => {
 
   // Update API key specifically
   const updateApiKey = async (apiKey: string) => {
-    const hasKey = apiKey.trim().length > 0;
     return await saveSettings({ 
-      openai_api_key: apiKey,
-      has_openai_api_key: hasKey 
+      openai_api_key: apiKey
     });
   };
 
