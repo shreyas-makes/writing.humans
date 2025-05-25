@@ -157,8 +157,8 @@ const Landing = () => {
 
         // Create the indicator element positioned relative to the container
         const indicator = document.createElement('div');
-        indicator.className = `suggestion-indicator absolute w-3 h-3 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 transition-colors z-10 ${
-          selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-300' : ''
+        indicator.className = `suggestion-indicator absolute w-4 h-4 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-200 z-10 shadow-md ${
+          selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-300 ring-offset-1' : ''
         }`;
         indicator.title = 'Click to see AI suggestion';
         
@@ -174,9 +174,9 @@ const Landing = () => {
         const editorRect = editorRef.current!.getBoundingClientRect();
         
         // Calculate position relative to the container
-        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 6;
-        // Position the indicator closer to the editor content, in the right margin but not overlapping with the panel
-        const relativeLeft = editorRect.right - containerRect.left + 8;
+        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 8;
+        // Position the indicator in the left margin of the editor, giving it more breathing room
+        const relativeLeft = editorRect.left - containerRect.left - 24;
         
         indicator.style.left = `${relativeLeft}px`;
         indicator.style.top = `${relativeTop}px`;
@@ -262,23 +262,26 @@ const Landing = () => {
       <section className="py-8 px-4">
         <div className="container max-w-7xl mx-auto">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-8">
               {/* Editor Section */}
               <div className="flex-1">
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="ml-4 text-sm text-gray-500">Demo Document</span>
-                </div>
-                <div ref={containerRef} className="min-h-[500px] border border-gray-200 rounded-lg bg-white relative shadow-lg">
-                  <div ref={editorRef} className="prose prose-lg max-w-none p-6">
+
+                <div ref={containerRef} className="min-h-[500px] border border-gray-200 rounded-lg bg-white relative shadow-lg pl-8">
+                  <div ref={editorRef} className="prose prose-lg max-w-none px-6 pt-16 ml-4 mr-3 pb-16">
                     <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                      Transform Your Writing with AI-Powered Assistance
+                      Hey, writing humans!
                     </h1>
                     
+                    <p className="text-gray-700 mb-4 mt-2">
+                      This is an AI writing tool for 100% human writing
+                    </p>
+
                     <p className="text-gray-700 mb-4">
-                      Our intelligent writing assistant helps you create clear, engaging content that resonates with your audience. Whether you're writing blog posts, marketing copy, or professional documents, our AI provides real-time suggestions to improve clarity, conciseness, and impact.
+                      Confused what this means? Unlike other "AI-powered" writing apps, we let you do the writing, and let AI do what it's best at: suggesting improvements, edits, and fixes.
+                    </p>
+
+                    <p className="text-gray-700 mb-4">
+                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
                     </p>
                     
                     <p className="text-gray-700 mb-4">
@@ -289,17 +292,7 @@ const Landing = () => {
                       {renderTextWithSuggestions('demo-2')} Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
                     </p>
                     
-                    <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3">
-                      Key Benefits
-                    </h2>
-                    
-                    <ul className="text-gray-700 mb-4 space-y-1">
-                      <li>• Real-time AI suggestions for clarity and style</li>
-                      <li>• Grammar and readability improvements</li>
-                      <li>• Tone and voice optimization</li>
-                      <li>• Professional writing enhancement</li>
-                    </ul>
-                    
+              
                     <p className="text-gray-700">
                       {renderTextWithSuggestions('demo-3')}
                     </p>
@@ -332,7 +325,7 @@ const Landing = () => {
                   <div className="h-full flex items-center justify-center p-4">
                     <div className="text-center text-muted-foreground">
                       <p>No suggestion selected</p>
-                      <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
+                      <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mx-1"></span> in the left margin to view details.</p>
                     </div>
                   </div>
                 )}
