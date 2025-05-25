@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
 import Editor from '@/components/Editor';
 import SuggestionPanel, { type Suggestion } from '@/components/SuggestionPanel';
 import { useToast } from '@/hooks/use-toast';
@@ -8,9 +7,18 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAISuggestions } from '@/hooks/useAISuggestions';
-import { FileText, ArrowLeft, Settings } from 'lucide-react';
+import { FileText, ArrowLeft, Settings, User, LogOut, Bold, Italic, Underline, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import LogoHeader from '@/components/ui/LogoHeader';
 
 const EditorPage = () => {
   const { documentId } = useParams<{ documentId: string }>();
@@ -26,7 +34,7 @@ const EditorPage = () => {
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   
   const {
     currentDocument,
@@ -186,11 +194,26 @@ const EditorPage = () => {
   const getSaveStatusText = () => {
     switch (saveStatus) {
       case 'saving':
-        return <span className="text-xs text-blue-500 font-medium">• Saving...</span>;
+        return (
+          <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+            Saving
+          </div>
+        );
       case 'unsaved':
-        return <span className="text-xs text-orange-500 font-medium">• Unsaved</span>;
+        return (
+          <div className="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-medium">
+            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+            Unsaved
+          </div>
+        );
       case 'saved':
-        return <span className="text-xs text-green-500 font-medium">• Saved</span>;
+        return (
+          <div className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            Saved
+          </div>
+        );
       default:
         return null;
     }
@@ -225,57 +248,70 @@ const EditorPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Clean Header without document list toggle */}
-      <header className="border-b border-border bg-background sticky top-0 z-10">
-        <div className="container flex items-center justify-between h-14 px-4">
+      {/* Minimal Header for focused writing */}
+      <header className="border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+        <div className="container flex items-center justify-between h-12 px-6">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleBackToHome}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">Back</span>
-            </Button>
-            <h1 className="font-semibold text-soft-blue">writing.humans</h1>
+            <LogoHeader onClick={() => navigate('/home')} minimal />
             <input
               type="text"
               value={documentTitle}
               onChange={(e) => setDocumentTitle(e.target.value)}
-              className="bg-transparent border-none outline-none focus:ring-0 text-lg font-medium"
+              className="bg-transparent border-none outline-none focus:ring-0 text-base font-medium text-gray-800 placeholder-gray-400"
+              placeholder="Untitled Document"
               aria-label="Document title"
             />
-            {getSaveStatusText()}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center border-r pr-3 mr-3">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleToggleBold}>
-                <span className="font-bold">B</span>
+          <div className="flex items-center gap-2">
+            {/* Formatting Options */}
+            <div className="flex items-center border-r border-gray-200 pr-2 mr-2">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" onClick={handleToggleBold} title="Bold">
+                <Bold className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleToggleItalic}>
-                <span className="italic">I</span>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" onClick={handleToggleItalic} title="Italic">
+                <Italic className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleToggleUnderline}>
-                <span className="underline">U</span>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" onClick={handleToggleUnderline} title="Underline">
+                <Underline className="h-4 w-4" />
               </Button>
             </div>
+            {getSaveStatusText()}
             <Button 
-              variant={aiPanelOpen ? "secondary" : "outline"} 
+              variant="ghost" 
+              size="sm"
               onClick={() => {
                 const newAiPanelOpenState = !aiPanelOpen;
                 setAiPanelOpen(newAiPanelOpenState);
-                // if (!newAiPanelOpenState) { // If closing panel
-                //   setSelectedSuggestion(null); // Clear selection when hiding panel
-                // }
-                // Let's always clear selection when toggling panel for simplicity,
-                // or rely on user clicking a dot again if they re-open.
                 setSelectedSuggestion(null);
               }}
-              className="text-xs sm:text-sm"
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              title={aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
             >
-              {aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
+              {aiPanelOpen ? <EyeOff size={16} /> : <Eye size={16} />}
             </Button>
+            {/* Simplified User Menu */}
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                    <User size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </header>
@@ -295,10 +331,8 @@ const EditorPage = () => {
         {aiPanelOpen && (
           <aside className={`bg-light-gray border-l border-border ${isMobile ? 'fixed inset-y-0 right-0 z-20 w-3/4' : 'w-80 lg:w-96'} overflow-y-auto`}>
             <div className="sticky top-0 bg-light-gray p-4 border-b border-border">
-              <h2 className="font-medium text-dark-gray">AI Suggestion</h2> {/* Changed title */}
-              <p className="text-xs text-muted-foreground mt-1">
-                {selectedSuggestion ? "Details for the selected suggestion." : "Click an indicator in the text to see a suggestion."}
-              </p>
+              <h2 className="font-medium text-dark-gray">Edits suggested</h2> {/* Changed title */}
+        
             </div>
             <SuggestionPanel 
               suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel

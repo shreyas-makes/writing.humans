@@ -25,6 +25,7 @@ interface HeaderProps {
   documentListOpen: boolean;
   isSaving: boolean;
   hasUnsavedChanges?: boolean;
+  onLogoClick?: () => void;
 }
 
 const Header = ({ 
@@ -39,16 +40,27 @@ const Header = ({
   onToggleDocumentList,
   documentListOpen,
   isSaving,
-  hasUnsavedChanges = false
+  hasUnsavedChanges = false,
+  onLogoClick
 }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
+  const renderLogo = () => (
+    <h1 className="font-semibold text-soft-blue">writing.humans</h1>
+  );
+
   return (
-    <header className="border-b border-border bg-background sticky top-0 z-10">
+    <header className="border-b border-border bg-light-gray sticky top-0 z-10">
       <div className="container flex items-center justify-between h-14 px-4">
         <div className="flex items-center gap-4">
-          <h1 className="font-semibold text-soft-blue">writing.humans</h1>
+          {onLogoClick ? (
+            <button onClick={onLogoClick} className="p-0 h-auto bg-transparent border-none cursor-pointer">
+              {renderLogo()}
+            </button>
+          ) : (
+            renderLogo()
+          )}
           <input
             type="text"
             value={documentTitle}
@@ -56,9 +68,6 @@ const Header = ({
             className="bg-transparent border-none outline-none focus:ring-0 text-lg font-medium"
             aria-label="Document title"
           />
-          {hasUnsavedChanges && (
-            <span className="text-xs text-orange-500 font-medium">• Unsaved</span>
-          )}
         </div>
         <div className="flex items-center gap-3">
           <Button 
@@ -98,6 +107,9 @@ const Header = ({
               <Underline className="h-4 w-4" />
             </Button>
           </div>
+          {hasUnsavedChanges && (
+            <span className="text-xs text-orange-500 font-medium text-right">• Unsaved</span>
+          )}
           <Button 
             variant={aiPanelOpen ? "secondary" : "outline"} 
             onClick={onToggleAiPanel}

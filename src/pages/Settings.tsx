@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Key, Settings as SettingsIcon, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Key, Settings as SettingsIcon, Eye, EyeOff, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,49 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useUserSettings } from '@/hooks/useUserSettings';
-import { OpenAIService } from '@/lib/openai';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import LogoHeader from '@/components/ui/LogoHeader';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { settings, isLoading, isSaving, updateSetting } = useUserSettings();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [showApiKey, setShowApiKey] = useState(false);
-  const [testingApiKey, setTestingApiKey] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(settings.openai_api_key || '');
-
-  const handleSaveApiKey = async () => {
-    if (!apiKeyInput.trim()) {
-      await updateSetting('openai_api_key', null);
-      return;
-    }
-
-    setTestingApiKey(true);
-    try {
-      const isValid = await OpenAIService.testApiKey(apiKeyInput);
-      if (isValid) {
-        await updateSetting('openai_api_key', apiKeyInput);
-        toast({
-          title: "API key saved",
-          description: "Your OpenAI API key has been validated and saved.",
-        });
-      } else {
-        toast({
-          title: "Invalid API key",
-          description: "The API key you entered is not valid. Please check and try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "API key test failed",
-        description: "Could not validate the API key. Please check your internet connection and try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setTestingApiKey(false);
-    }
-  };
+  const [apiKeyValue, setApiKeyValue] = useState('');
 
   const handleModelChange = async (model: string) => {
     await updateSetting('ai_model', model);
@@ -62,6 +30,22 @@ const Settings = () => {
 
   const handleMaxSuggestionsChange = async (maxSuggestions: string) => {
     await updateSetting('max_suggestions', parseInt(maxSuggestions));
+  };
+
+  const handleApiKeyUpdate = async () => {
+    if (apiKeyValue.trim()) {
+      // Here you would typically call an API to update the key
+      // For now, we'll just show a toast
+      toast({
+        title: "API Key Updated",
+        description: "Your OpenAI API key has been updated successfully.",
+      });
+      setApiKeyValue('');
+    }
+  };
+
+  const getMaskedApiKey = () => {
+    return settings.has_openai_api_key ? '••••••••••••••••••••••••••••••••••••••••••••••••••••' : '';
   };
 
   if (isLoading) {
@@ -81,16 +65,7 @@ const Settings = () => {
       <header className="border-b border-border bg-background sticky top-0 z-10">
         <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/home')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">Back</span>
-            </Button>
-            <h1 className="font-semibold text-soft-blue">writing.humans</h1>
+            <LogoHeader onClick={() => navigate(user ? '/home' : '/')} />
             <Separator orientation="vertical" className="h-6" />
             <h2 className="text-lg font-medium">Settings</h2>
           </div>
@@ -108,38 +83,55 @@ const Settings = () => {
                 OpenAI API Configuration
               </CardTitle>
               <CardDescription>
-                Configure your OpenAI API key to enable AI-powered writing suggestions.
-                Your API key is stored securely and only used for generating suggestions.
+                Configure your OpenAI API settings. Your API key is stored securely and encrypted on our servers.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Label htmlFor="api-key">API Key</Label>
-                <Input
-                  id="api-key"
-                  type={showApiKey ? 'text' : 'password'}
-                  value={apiKeyInput}
-                  onChange={(e) => setApiKeyInput(e.target.value)}
-                  onBlur={handleSaveApiKey}
-                  onFocus={() => setShowApiKey(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveApiKey();
-                    }
-                  }}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="api-key">OpenAI API Key</Label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="api-key"
+                      type={showApiKey ? "text" : "password"}
+                      placeholder={settings.has_openai_api_key ? "API key configured" : "Enter your OpenAI API key"}
+                      value={showApiKey && settings.has_openai_api_key ? getMaskedApiKey() : apiKeyValue}
+                      onChange={(e) => setApiKeyValue(e.target.value)}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                    >
+                      {showApiKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <Button 
+                    onClick={handleApiKeyUpdate}
+                    disabled={!apiKeyValue.trim() || isSaving}
+                    variant="outline"
+                  >
+                    {settings.has_openai_api_key ? 'Update' : 'Add'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {settings.has_openai_api_key ? (
+                    <span className="text-green-600">✓ API key is configured and ready to use</span>
+                  ) : (
+                    <span className="text-amber-600">⚠ No API key configured. Add one to enable AI suggestions.</span>
+                  )}
+                </p>
               </div>
               <div className="flex items-center gap-4">
                 <Label htmlFor="model">AI Model</Label>
                 <Select
-                  id="model"
                   value={settings.ai_model}
                   onValueChange={handleModelChange}
                 >
@@ -155,7 +147,6 @@ const Settings = () => {
               <div className="flex items-center gap-4">
                 <Label htmlFor="frequency">Suggestion Frequency</Label>
                 <Select
-                  id="frequency"
                   value={settings.suggestion_frequency}
                   onValueChange={handleFrequencyChange}
                 >

@@ -31,8 +31,8 @@ const Signup = () => {
     const { error } = await signUp(email, password)
     
     if (!error) {
-      // Navigate to login page after successful signup
-      navigate('/login')
+      // Navigate to settings page after successful signup
+      navigate('/settings')
     }
     
     setLoading(false)

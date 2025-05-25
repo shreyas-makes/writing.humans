@@ -14,6 +14,7 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import LogoHeader from '@/components/ui/LogoHeader';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -62,10 +63,7 @@ const Home = () => {
       <header className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <FileText className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-xl font-semibold text-gray-900">writing.humans</h1>
-            </div>
+            <LogoHeader onClick={() => navigate('/home')} />
             
             {/* User Menu */}
             {user && (
@@ -98,13 +96,8 @@ const Home = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Start a new document
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Create and edit documents with AI-powered suggestions
-          </p>
+        <div className="text-center mt-12 mb-12">
+          
           
           {/* New Document Button */}
           <div className="flex justify-center mb-8">
@@ -114,7 +107,7 @@ const Home = () => {
             >
               <Plus className="h-12 w-12 text-gray-400 group-hover:text-blue-500 mb-3" />
               <span className="text-sm font-medium text-gray-600 group-hover:text-blue-700">
-                Blank Document
+                Start drafting your essay
               </span>
             </button>
           </div>
@@ -138,7 +131,7 @@ const Home = () => {
                 >
                   {/* Document Preview */}
                   <div className="aspect-[3/4] bg-gray-50 border-b border-gray-200 p-4 relative">
-                    <div className="text-xs text-gray-700 leading-relaxed line-clamp-6">
+                    <div className="text-xs text-gray-700 leading-relaxed line-clamp-6 group-hover:text-white relative z-10">
                       {truncateText(document.content)}
                     </div>
                     
@@ -150,10 +143,10 @@ const Home = () => {
 
                   {/* Document Info */}
                   <div className="p-4">
-                    <h4 className="font-medium text-gray-900 truncate mb-1">
+                    <h4 className="font-medium text-gray-900 truncate mb-1 group-hover:text-white relative z-10">
                       {document.title || 'Untitled Document'}
                     </h4>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 group-hover:text-white relative z-10">
                       Edited {formatDistanceToNow(new Date(document.updated_at), { addSuffix: true })}
                     </p>
                   </div>

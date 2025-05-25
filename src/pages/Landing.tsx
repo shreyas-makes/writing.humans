@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, FileText } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import LogoHeader from '@/components/ui/LogoHeader';
 
 interface DemoSuggestion {
   id: string;
@@ -51,35 +53,64 @@ function computeLCS(arr1: string[], arr2: string[]): string[] {
 
 function generateDiff(originalWords: string[], suggestedWords: string[], lcs: string[]): Array<[number, string]> {
   const diff: Array<[number, string]> = [];
-  let ptrOriginal = 0;
-  let ptrSuggested = 0;
-  let ptrLCS = 0;
+  let i = 0; // Pointer for originalWords
+  let j = 0; // Pointer for suggestedWords
+  let k = 0; // Pointer for lcs
 
-  while (ptrOriginal < originalWords.length || ptrSuggested < suggestedWords.length) {
-    const lcsWord = ptrLCS < lcs.length ? lcs[ptrLCS] : null;
-    const originalWord = ptrOriginal < originalWords.length ? originalWords[ptrOriginal] : null;
-    const suggestedWord = ptrSuggested < suggestedWords.length ? suggestedWords[ptrSuggested] : null;
-
-    if (originalWord !== null && originalWord === lcsWord && suggestedWord !== null && suggestedWord === lcsWord) {
-      diff.push([0, originalWord]);
-      ptrOriginal++;
-      ptrSuggested++;
-      ptrLCS++;
-    } else if (originalWord !== null && (lcsWord === null || originalWord !== lcsWord || suggestedWord !== lcsWord)) {
-      if (suggestedWord !== null && suggestedWord === lcsWord) {
-         diff.push([-1, originalWord]);
-         ptrOriginal++;
-      } else {
-         diff.push([-1, originalWord]);
-         ptrOriginal++;
-      }
-    } else if (suggestedWord !== null && (lcsWord === null || suggestedWord !== lcsWord)) {
-      diff.push([1, suggestedWord]);
-      ptrSuggested++;
+  while (k < lcs.length) {
+    // Consume deletions from originalWords
+    while (i < originalWords.length && originalWords[i] !== lcs[k]) {
+      diff.push([-1, originalWords[i]]);
+      i++;
+    }
+    // Consume additions from suggestedWords
+    while (j < suggestedWords.length && suggestedWords[j] !== lcs[k]) {
+      diff.push([1, suggestedWords[j]]);
+      j++;
+    }
+    
+    // Consume common LCS element
+    // Ensure pointers are within bounds before accessing elements
+    if (i < originalWords.length && j < suggestedWords.length && k < lcs.length && 
+        originalWords[i] === lcs[k] && suggestedWords[j] === lcs[k]) {
+      diff.push([0, lcs[k]]);
+      i++;
+      j++;
+      k++;
     } else {
+      // If LCS element is not found at current positions of original/suggested,
+      // it implies an issue with LCS or inputs, or remaining parts are purely add/delete.
+      // For robustness, break here and let trailing logic handle the rest.
+      // This case could also happen if lcs[k] was a whitespace/empty string that causes misalignment.
+      // Given splitText can produce various tokens, this robust handling is safer.
+      // If k < lcs.length but we can't match, it means lcs[k] is unmatchable with current i,j.
+      // This might mean lcs[k] itself is problematic or i,j already passed its match.
+      // The outer loops for remaining elements will handle non-LCS tails.
+      // To prevent infinite loops if k doesn't advance but i and j also don't, we can advance k cautiously
+      // or rely on the fact that i or j must advance to make progress towards lcs[k].
+      // The most straightforward is that if originalWords[i] !== lcs[k] or suggestedWords[j] !== lcs[k],
+      // the inner while loops should have handled them. So this 'else' suggests k should advance
+      // or that the remaining parts don't involve lcs[k].
+      // However, simply breaking and letting trailing additions/deletions handle seems safer.
+      // If we are in this else, it means we couldn't make a 3-way match for lcs[k].
+      // It's possible that lcs[k] was skipped due to prior advancement of i or j.
+      // A simple break is fine as the post-loop logic will handle remaining words.
       break; 
     }
   }
+
+  // Append remaining deletions from originalWords
+  while (i < originalWords.length) {
+    diff.push([-1, originalWords[i]]);
+    i++;
+  }
+
+  // Append remaining additions from suggestedWords
+  while (j < suggestedWords.length) {
+    diff.push([1, suggestedWords[j]]);
+    j++;
+  }
+
   return diff;
 }
 
@@ -112,6 +143,7 @@ const Landing = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   // Static demo suggestions
   const demoSuggestions: DemoSuggestion[] = [
@@ -137,6 +169,13 @@ const Landing = () => {
 
   const [selectedSuggestion, setSelectedSuggestion] = useState<DemoSuggestion>(demoSuggestions[0]);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState<string[]>([]);
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/home');
+    }
+  }, [user, navigate]);
 
   // Position suggestion indicators using the Editor component logic
   useEffect(() => {
@@ -174,7 +213,7 @@ const Landing = () => {
         const editorRect = editorRef.current!.getBoundingClientRect();
         
         // Calculate position relative to the container
-        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 8;
+        const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 6;
         // Position the indicator in the left margin of the editor, giving it more breathing room
         const relativeLeft = editorRect.left - containerRect.left - 24;
         
@@ -242,10 +281,7 @@ const Landing = () => {
       {/* Header */}
       <header className="border-b border-border bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between h-16 px-4 max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <FileText className="h-8 w-8 text-blue-600" />
-            <h1 className="text-xl font-bold text-gray-900">writing.humans</h1>
-          </div>
+          <LogoHeader onClick={() => navigate('/')} />
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={handleSignIn}>
               Sign In

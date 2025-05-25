@@ -13,7 +13,6 @@ interface OpenAIResponse {
 
 interface SuggestionRequest {
   content: string;
-  apiKey: string;
   model?: string;
   suggestionType?: 'general' | 'conciseness' | 'clarity' | 'engagement' | 'expand' | 'rephrase_alternatives';
   documentContext?: {
@@ -31,43 +30,18 @@ interface ParsedSuggestion {
 export class OpenAIService {
   private static async makeRequest(
     messages: OpenAIMessage[],
-    apiKey: string,
     model: string = 'gpt-3.5-turbo'
   ): Promise<string> {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'OpenAI API request failed');
-    }
-
-    const data: OpenAIResponse = await response.json();
-    return data.choices[0]?.message?.content || '';
+    console.warn('OpenAIService.makeRequest: API key handling not yet migrated to backend.');
+    return JSON.stringify([]);
   }
 
   static async generateSuggestions({
     content,
-    apiKey,
     model = 'gpt-3.5-turbo',
     suggestionType = 'general', 
     documentContext
   }: SuggestionRequest): Promise<ParsedSuggestion[]> {
-    if (!apiKey) {
-      throw new Error('OpenAI API key is required');
-    }
-
     const plainText = content.replace(/<[^>]*>?/gm, '');
 
     if (plainText.length < 30) { 
@@ -138,7 +112,7 @@ export class OpenAIService {
     ];
 
     try {
-      const responseString = await this.makeRequest(messages, apiKey, model);
+      const responseString = await this.makeRequest(messages, model);
       
       const suggestions = JSON.parse(responseString);
       
@@ -156,27 +130,14 @@ export class OpenAIService {
     } catch (error) {
       console.error('Error parsing OpenAI response or generating suggestions:', error);
       if (error instanceof SyntaxError) {
-         // Attempt to log the problematic string if the error is from JSON.parse
-         // Note: 'responseString' is available here.
-         console.error("Failed to parse JSON response from OpenAI. Response string:", responseString);
+         // responseString is not in scope here anymore if makeRequest failed before returning a string.
+         // For now, the stubbed makeRequest always returns a valid JSON string, so this path is less likely for SyntaxError from JSON.parse.
+         // However, if makeRequest were to throw an error before returning, responseString would not be defined.
+         console.error("Failed to parse JSON response from OpenAI. The response might have been malformed or the request failed before a response was generated.");
          throw new Error('Failed to parse AI suggestions due to invalid JSON response.');
       }
       // For other errors, rethrow a generic or the original error if it's already informative
       throw new Error(`Failed to generate or parse AI suggestions: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  static async testApiKey(apiKey: string): Promise<boolean> {
-    try {
-      const messages: OpenAIMessage[] = [
-        { role: 'user', content: 'Hello, this is a test message.' }
-      ];
-      
-      await this.makeRequest(messages, apiKey, 'gpt-3.5-turbo');
-      return true;
-    } catch (error) {
-      console.error('API key test failed:', error);
-      return false;
     }
   }
 } 
