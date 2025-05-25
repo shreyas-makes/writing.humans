@@ -261,6 +261,98 @@ export const useDocuments = () => {
     }
   }, [saveDocument])
 
+  // Create a shareable link for a document
+  const createShareLink = useCallback(async (documentId: string) => {
+    try {
+      // Generate a random token for the share link
+      const shareToken = crypto.randomUUID().replace(/-/g, '')
+      
+      const { data, error } = await supabase
+        .from('document_shares')
+        .insert({
+          document_id: documentId,
+          share_token: shareToken,
+          created_by: user?.id,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Supabase share creation error:', error)
+        throw error
+      }
+
+      const shareUrl = `${window.location.origin}/shared/${shareToken}`
+      
+      toast({
+        title: "Share link created",
+        description: "The link has been copied to your clipboard.",
+      })
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(shareUrl)
+      
+      return shareUrl
+    } catch (error) {
+      console.error('Error creating share link:', error)
+      toast({
+        title: "Error",
+        description: `Failed to create share link: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      })
+      return null
+    }
+  }, [user?.id, toast])
+
+  // Load a shared document by token
+  const loadSharedDocument = useCallback(async (shareToken: string) => {
+    setIsLoading(true)
+    try {
+      // First get the share record to verify it's valid
+      const { data: shareData, error: shareError } = await supabase
+        .from('document_shares')
+        .select('document_id, is_active, expires_at')
+        .eq('share_token', shareToken)
+        .single()
+
+      if (shareError || !shareData) {
+        console.error('Share not found:', shareError)
+        return { notFound: true, shareToken }
+      }
+
+      // Check if share is active and not expired
+      if (!shareData.is_active || (shareData.expires_at && new Date(shareData.expires_at) < new Date())) {
+        console.log('Share is inactive or expired')
+        return { expired: true, shareToken }
+      }
+
+      // Now get the document
+      const { data: documentData, error: documentError } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('id', shareData.document_id)
+        .single()
+
+      if (documentError || !documentData) {
+        console.error('Document not found:', documentError)
+        return { notFound: true, shareToken }
+      }
+
+      setCurrentDocument(documentData)
+      return documentData
+    } catch (error) {
+      console.error('Error loading shared document:', error)
+      toast({
+        title: "Error",
+        description: `Failed to load shared document: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      })
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [toast])
+
   // Load documents on mount
   useEffect(() => {
     loadDocuments()
@@ -278,5 +370,7 @@ export const useDocuments = () => {
     createNewDocument,
     createDocumentWithId,
     autoSave,
+    createShareLink,
+    loadSharedDocument,
   }
 } 

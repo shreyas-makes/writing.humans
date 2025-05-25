@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import UpdatePassword from "./pages/UpdatePassword";
 import Landing from "./pages/Landing";
+import SharedDocumentPage from "./pages/SharedDocument";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/shared/:shareToken" element={<SharedDocumentPage />} />
             
             {/* Settings route - requires auth but not API key */}
             <Route path="/settings" element={

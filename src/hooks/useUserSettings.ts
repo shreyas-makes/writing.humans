@@ -10,7 +10,6 @@ export interface UserSettings {
   has_openai_api_key?: boolean;
   ai_model: string;
   suggestion_frequency: 'low' | 'normal' | 'high';
-  max_suggestions: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -20,7 +19,6 @@ const defaultSettings: UserSettings = {
   has_openai_api_key: false,
   ai_model: 'gpt-3.5-turbo',
   suggestion_frequency: 'normal',
-  max_suggestions: 3,
 };
 
 export const useUserSettings = () => {

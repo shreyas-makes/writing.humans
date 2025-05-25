@@ -7,7 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAISuggestions } from '@/hooks/useAISuggestions';
-import { FileText, ArrowLeft, Settings, User, LogOut, Bold, Italic, Underline, Eye, EyeOff } from 'lucide-react';
+import { FileText, ArrowLeft, Settings, User, LogOut, Bold, Italic, Underline, Eye, EyeOff, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -45,6 +45,7 @@ const EditorPage = () => {
     loadDocument,
     saveDocument,
     createDocumentWithId,
+    createShareLink,
   } = useDocuments();
 
   const {
@@ -55,26 +56,44 @@ const EditorPage = () => {
     hasApiKey,
   } = useAISuggestions({ content, enabled: aiPanelOpen, documentTitle });
 
+  // Calculate max suggestions based on document length (1 suggestion per 5 lines)
+  const calculateMaxSuggestions = (textContent: string) => {
+    const plainText = textContent.replace(/<[^>]*>?/gm, '');
+    // Count lines more accurately by considering both \n and estimated line breaks
+    const explicitLines = plainText.split('\n').length;
+    // Estimate lines based on content length (assuming ~80 characters per line)
+    const estimatedLines = Math.ceil(plainText.length / 80);
+    // Use the higher of the two to account for long lines
+    const lines = Math.max(explicitLines, estimatedLines);
+    return Math.max(1, Math.floor(lines / 5)); // At least 1 suggestion, 1 per 5 lines
+  };
+
   // useEffect to log suggestion data for debugging
   useEffect(() => {
-    console.log("AI Suggestions Hook Data:", {
+    console.log("🎯 AI Suggestions Hook Data:", {
       suggestions,
+      suggestionsCount: suggestions?.length || 0,
       isGenerating,
       aiError,
       hasApiKey,
       aiPanelOpen,
+      blueIndicatorsVisible,
+      content: content.substring(0, 100) + '...',
+      contentLength: content.length
     });
     // Check if any suggestions have position data
     if (suggestions && suggestions.length > 0) {
       suggestions.forEach(s => {
         if (!s.position) {
-          console.warn(`Suggestion ID ${s.id} is missing position data.`);
+          console.warn(`❌ Suggestion ID ${s.id} is missing position data.`);
         } else {
-          console.log(`Suggestion ID ${s.id} has position:`, s.position);
+          console.log(`✅ Suggestion ID ${s.id} has position:`, s.position);
         }
       });
+    } else {
+      console.log("📭 No suggestions available");
     }
-  }, [suggestions, isGenerating, aiError, hasApiKey, aiPanelOpen]);
+  }, [suggestions, isGenerating, aiError, hasApiKey, aiPanelOpen, blueIndicatorsVisible, content]);
 
   // Load document when component mounts or documentId changes
   useEffect(() => {
@@ -193,6 +212,24 @@ const EditorPage = () => {
     navigate('/home');
   };
 
+  const handleShare = async () => {
+    if (!documentId) {
+      toast({
+        title: "Error",
+        description: "Document must be saved before sharing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Ensure document is saved before sharing
+    if (hasUnsavedChanges) {
+      await handleSave();
+    }
+
+    await createShareLink(documentId);
+  };
+
   const getSaveStatusText = () => {
     switch (saveStatus) {
       case 'saving':
@@ -281,6 +318,16 @@ const EditorPage = () => {
             <Button 
               variant="ghost" 
               size="sm"
+              onClick={handleShare}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              title="Share document"
+              disabled={!documentId}
+            >
+              <Send size={16} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
               onClick={() => {
                 const newAiPanelOpenState = !aiPanelOpen;
                 setAiPanelOpen(newAiPanelOpenState);
@@ -346,6 +393,8 @@ const EditorPage = () => {
           <aside className={`bg-light-gray border-l border-border ${isMobile ? 'fixed inset-y-0 right-0 z-20 w-3/4' : 'w-80 lg:w-96'} overflow-y-auto`}>
             <div className="sticky top-0 bg-light-gray p-4 border-b border-border">
               <h2 className="font-medium text-dark-gray">Edits suggested</h2> {/* Changed title */}
+              
+             
         
             </div>
             <SuggestionPanel 

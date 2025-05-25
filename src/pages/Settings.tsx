@@ -28,10 +28,6 @@ const Settings = () => {
     await updateSetting('suggestion_frequency', frequency);
   };
 
-  const handleMaxSuggestionsChange = async (maxSuggestions: string) => {
-    await updateSetting('max_suggestions', parseInt(maxSuggestions));
-  };
-
   const handleApiKeyUpdate = async () => {
     if (apiKeyValue.trim()) {
       const success = await updateApiKey(apiKeyValue.trim());
@@ -64,79 +60,90 @@ const Settings = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b border-border bg-background sticky top-0 z-10">
-        <div className="container flex items-center justify-between h-14 px-4">
+        <div className="container flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-4">
             <LogoHeader onClick={() => navigate(user ? '/home' : '/')} />
             <Separator orientation="vertical" className="h-6" />
-            <h2 className="text-lg font-medium">Settings</h2>
+            <h1 className="text-xl font-semibold">Settings</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          {/* OpenAI API Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                OpenAI API Configuration
-              </CardTitle>
-              <CardDescription>
-                Configure your OpenAI API settings. Your API key is stored securely and encrypted on our servers.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="api-key">OpenAI API Key</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      id="api-key"
-                      type={showApiKey ? "text" : "password"}
-                      placeholder={settings.has_openai_api_key ? "API key configured" : "Enter your OpenAI API key"}
-                      value={showApiKey && settings.has_openai_api_key ? getMaskedApiKey() : apiKeyValue}
-                      onChange={(e) => setApiKeyValue(e.target.value)}
-                      className="pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                    >
-                      {showApiKey ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <Button 
-                    onClick={handleApiKeyUpdate}
-                    disabled={!apiKeyValue.trim() || isSaving}
-                    variant="outline"
+      <main className="max-w-2xl mx-auto px-6 py-12">
+        {/* OpenAI API Configuration */}
+        <Card className="shadow-sm">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center gap-3 text-lg">
+              <Key className="h-5 w-5" />
+              OpenAI API Configuration
+            </CardTitle>
+            <CardDescription className="text-sm leading-relaxed">
+              Configure your OpenAI API settings. Your API key is stored securely and encrypted on our servers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            {/* API Key Section */}
+            <div className="space-y-3">
+              <Label htmlFor="api-key" className="text-sm font-medium">OpenAI API Key</Label>
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <Input
+                    id="api-key"
+                    type={showApiKey ? "text" : "password"}
+                    placeholder={settings.has_openai_api_key ? "API key configured" : "Enter your OpenAI API key"}
+                    value={showApiKey && settings.has_openai_api_key ? getMaskedApiKey() : apiKeyValue}
+                    onChange={(e) => setApiKeyValue(e.target.value)}
+                    className="pr-12 h-11"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1 h-9 w-9 p-0 hover:bg-gray-100"
+                    onClick={() => setShowApiKey(!showApiKey)}
                   >
-                    {settings.has_openai_api_key ? 'Update' : 'Add'}
+                    {showApiKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {settings.has_openai_api_key ? (
-                    <span className="text-green-600">✓ API key is configured and ready to use</span>
-                  ) : (
-                    <span className="text-amber-600">⚠ No API key configured. Add one to enable AI suggestions.</span>
-                  )}
-                </p>
+                <Button 
+                  onClick={handleApiKeyUpdate}
+                  disabled={!apiKeyValue.trim() || isSaving}
+                  className="h-11 px-6"
+                >
+                  {settings.has_openai_api_key ? 'Update' : 'Add'}
+                </Button>
               </div>
-              <div className="flex items-center gap-4">
-                <Label htmlFor="model">AI Model</Label>
+              <div className="flex items-center gap-2 mt-2">
+                {settings.has_openai_api_key ? (
+                  <span className="text-xs text-green-600 flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                    API key is configured and ready to use
+                  </span>
+                ) : (
+                  <span className="text-xs text-amber-600 flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                    No API key configured. Add one to enable AI suggestions.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Model Selection */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="model" className="text-sm font-medium">AI Model</Label>
                 <Select
                   value={settings.ai_model}
                   onValueChange={handleModelChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select a model" />
                   </SelectTrigger>
                   <SelectContent>
@@ -145,34 +152,31 @@ const Settings = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center gap-4">
-                <Label htmlFor="frequency">Suggestion Frequency</Label>
+
+              <div className="space-y-3">
+                <Label htmlFor="frequency" className="text-sm font-medium">Suggestion Frequency</Label>
+
+                
                 <Select
                   value={settings.suggestion_frequency}
                   onValueChange={handleFrequencyChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select a frequency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="low">Low (3 minutes)</SelectItem>
+                    <SelectItem value="normal">Normal (1 minute)</SelectItem>
+                    <SelectItem value="high">High (30 seconds)</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-600">
+                  Lower frequencies help optimize API costs while still providing timely feedback.
+                </p>
               </div>
-              <div className="flex items-center gap-4">
-                <Label htmlFor="max-suggestions">Max Suggestions</Label>
-                <Input
-                  id="max-suggestions"
-                  type="number"
-                  value={settings.max_suggestions.toString()}
-                  onChange={(e) => handleMaxSuggestionsChange(e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

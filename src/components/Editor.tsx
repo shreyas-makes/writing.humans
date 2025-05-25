@@ -8,9 +8,10 @@ interface EditorProps {
   suggestions?: Suggestion[];
   onSuggestionIndicatorClick?: (suggestion: Suggestion) => void;
   blueIndicatorsVisible?: boolean;
+  readOnly?: boolean;
 }
 
-const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndicatorClick, blueIndicatorsVisible = true }: EditorProps) => {
+const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndicatorClick, blueIndicatorsVisible = true, readOnly = false }: EditorProps) => {
   const { toast } = useToast();
   const editorRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,18 +27,46 @@ const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndica
 
   // Render suggestion indicators when suggestions change
   useEffect(() => {
-    if (!editorRef.current || !containerRef.current || !onSuggestionIndicatorClick) return;
+    console.log('🔵 Editor: Rendering suggestion indicators', {
+      suggestionsCount: suggestions.length,
+      blueIndicatorsVisible,
+      hasEditor: !!editorRef.current,
+      hasContainer: !!containerRef.current,
+      hasClickHandler: !!onSuggestionIndicatorClick,
+      suggestions: suggestions.map(s => ({ id: s.id, originalText: s.originalText, hasPosition: !!s.position }))
+    });
+
+    if (!editorRef.current || !containerRef.current || !onSuggestionIndicatorClick) {
+      console.log('❌ Editor: Missing required refs or click handler');
+      return;
+    }
 
     // Remove existing suggestion indicators
     const existingIndicators = containerRef.current.querySelectorAll('.suggestion-indicator');
+    console.log('🧹 Editor: Removing', existingIndicators.length, 'existing indicators');
     existingIndicators.forEach(indicator => indicator.remove());
 
     // Only add indicators if they should be visible
-    if (!blueIndicatorsVisible) return;
+    if (!blueIndicatorsVisible) {
+      console.log('👁️ Editor: Blue indicators are hidden');
+      return;
+    }
+
+    console.log('➕ Editor: Adding', suggestions.length, 'new indicators');
 
     // Add new suggestion indicators
-    suggestions.forEach(suggestion => {
-      if (!suggestion.position) return;
+    suggestions.forEach((suggestion, index) => {
+      console.log(`🎯 Editor: Processing suggestion ${index}:`, {
+        id: suggestion.id,
+        originalText: suggestion.originalText.substring(0, 50) + '...',
+        hasPosition: !!suggestion.position,
+        position: suggestion.position
+      });
+
+      if (!suggestion.position) {
+        console.log(`❌ Editor: Suggestion ${index} has no position data`);
+        return;
+      }
 
       // Find the position in the editor content to determine which line to place the indicator on
       try {
@@ -120,7 +149,7 @@ const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndica
   }, []);
 
   const handleInput = () => {
-    if (editorRef.current) {
+    if (editorRef.current && !readOnly) {
       const newContent = editorRef.current.innerHTML;
       onContentChange(newContent);
       setCurrentVersion(newContent);
@@ -141,8 +170,8 @@ const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndica
     <div ref={containerRef} className="editor-container relative">
       <div 
         ref={editorRef}
-        className="editor prose prose-sm sm:prose-base lg:prose-lg"
-        contentEditable
+        className={`editor prose prose-sm sm:prose-base lg:prose-lg ${readOnly ? 'cursor-default' : ''}`}
+        contentEditable={!readOnly}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}

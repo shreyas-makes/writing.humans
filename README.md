@@ -82,6 +82,7 @@ documents (
 
 - **Rich Text Editing**: Use the formatting toolbar for bold, italic, and underline
 - **AI Suggestions**: The AI panel provides real-time writing suggestions
+- **Smart Suggestion Limits**: Maximum suggestions are automatically calculated based on document length (1 suggestion per 5 lines)
 - **Auto-Save**: Documents are automatically saved every 30 seconds when there are changes
 - **Unsaved Changes Indicator**: See "• Unsaved" next to the document title when there are unsaved changes
 
