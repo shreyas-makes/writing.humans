@@ -1,7 +1,5 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 // Helper functions for diffing
 function splitText(text: string): string[] {
@@ -113,14 +111,10 @@ export interface Suggestion {
 
 interface SuggestionPanelProps {
   suggestion: Suggestion | null;
-  onAcceptSuggestion: (suggestion: Suggestion) => void;
-  onRejectSuggestion: (suggestion: Suggestion) => void;
 }
 
 const SuggestionPanel = ({ 
-  suggestion, 
-  onAcceptSuggestion, 
-  onRejectSuggestion 
+  suggestion
 }: SuggestionPanelProps) => {
   if (!suggestion) {
     return (
@@ -147,24 +141,6 @@ const SuggestionPanel = ({
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
             <p className="text-xs">{suggestion.explanation}</p>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="text-suggest-red hover:text-suggest-red hover:bg-suggest-red/10"
-              onClick={() => onRejectSuggestion(suggestion)}
-            >
-              <X className="h-4 w-4 mr-1" />
-            </Button>
-            <Button 
-              size="sm" 
-              className="bg-suggest-green/70 hover:bg-suggest-green/90 text-white"
-              onClick={() => onAcceptSuggestion(suggestion)}
-            >
-              <Check className="h-4 w-4"/>
-            </Button>
           </div>
         </CardContent>
       </Card>
