@@ -323,7 +323,7 @@ const EditorPage = () => {
               title="Share document"
               disabled={!documentId}
             >
-              <Send size={16} />
+              <Share size={16} />
             </Button>
             <Button 
               variant="ghost" 
