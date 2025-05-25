@@ -25,9 +25,9 @@ const ApiKeyProtectedRoute: React.FC<ApiKeyProtectedRouteProps> = ({ children })
     )
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, redirect to landing page
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return <Navigate to="/" state={{ from: location }} replace />
   }
 
   // If authenticated but no API key, redirect to settings

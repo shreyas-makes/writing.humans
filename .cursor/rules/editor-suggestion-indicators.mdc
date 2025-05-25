@@ -1,0 +1,75 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Editor Component and Suggestion Indicators
+
+## Overview
+The [Editor.tsx](mdc:src/components/Editor.tsx) component handles the main text editing functionality and displays AI suggestion indicators as blue dots in the margin.
+
+## Key Architecture
+
+### Component Structure
+- **Container**: Uses `containerRef` with `position: relative` for proper positioning context
+- **Editor**: Uses `editorRef` for the contentEditable area with prose styling
+- **Indicators**: Dynamically created DOM elements positioned absolutely within the container
+
+### Suggestion Indicator Positioning
+The suggestion indicators (blue dots) are positioned using the following logic:
+
+1. **Positioning Strategy**: Absolute positioning within the relative container (not fixed to viewport)
+2. **Vertical Position**: Centered on the target text line using `targetRect.top - containerRect.top + targetRect.height / 2 - 6`
+3. **Horizontal Position**: Placed in the right margin using `editorRect.right - containerRect.left + 40px`
+
+### Critical Implementation Details
+
+#### Scroll Behavior
+- Indicators use `absolute` positioning within the container, ensuring they scroll with content
+- Previously used `fixed` positioning which caused indicators to stay in place during scroll
+- Indicators are appended to `containerRef.current`, not `document.body`
+
+#### Position Calculation
+```typescript
+const targetRect = targetElement.getBoundingClientRect();
+const containerRect = containerRef.current.getBoundingClientRect();
+const editorRect = editorRef.current!.getBoundingClientRect();
+
+const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 6;
+const relativeLeft = editorRect.right - containerRect.left + 40;
+```
+
+#### Text Position Detection
+- Uses `TreeWalker` to traverse text nodes and find the target position
+- Finds the closest block-level element (p, div) containing the suggestion position
+- Handles HTML content with proper text position mapping
+
+## Usage in Editor Page
+The [Editor.tsx](mdc:src/pages/Editor.tsx) page passes suggestions and click handlers to the component:
+
+```typescript
+<Editor 
+  content={content} 
+  onContentChange={setContent}
+  suggestions={suggestions}
+  onSuggestionIndicatorClick={handleSuggestionIndicatorClick}
+/>
+```
+
+## Common Issues and Solutions
+
+### Indicators Not Scrolling
+- **Problem**: Using `fixed` positioning
+- **Solution**: Use `absolute` positioning within relative container
+
+### Indicators in Wrong Position
+- **Problem**: Incorrect margin calculation
+- **Solution**: Use `editorRect.right - containerRect.left + margin` for proper right margin placement
+
+### Missing Indicators
+- **Problem**: Suggestions without position data
+- **Solution**: Check `suggestion.position` exists before creating indicators
+
+## Related Components
+- [SuggestionPanel.tsx](mdc:src/components/SuggestionPanel.tsx) - Displays suggestion details
+- [useAISuggestions](mdc:src/hooks/useAISuggestions.tsx) - Generates suggestions with position data

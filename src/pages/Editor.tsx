@@ -180,7 +180,7 @@ const EditorPage = () => {
 
   const handleBackToHome = () => {
     // No need for confirmation since auto-save handles everything
-    navigate('/');
+    navigate('/home');
   };
 
   const getSaveStatusText = () => {
@@ -302,8 +302,6 @@ const EditorPage = () => {
             </div>
             <SuggestionPanel 
               suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel
-              onAcceptSuggestion={handleAcceptSuggestion} // Add this
-              onRejectSuggestion={handleRejectSuggestion} // Add this
             />
           </aside>
         )}

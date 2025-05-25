@@ -84,7 +84,7 @@ const Settings = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/home')}
               className="flex items-center gap-2"
             >
               <ArrowLeft size={16} />

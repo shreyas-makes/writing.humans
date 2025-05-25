@@ -14,6 +14,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import UpdatePassword from "./pages/UpdatePassword";
+import Landing from "./pages/Landing";
 
 const queryClient = new QueryClient();
 
@@ -39,11 +40,12 @@ const App = () => (
             } />
             
             {/* Protected routes that require API key */}
-            <Route path="/" element={
+            <Route path="/home" element={
               <ApiKeyProtectedRoute>
                 <Home />
               </ApiKeyProtectedRoute>
             } />
+            <Route path="/" element={<Landing />} />
             <Route path="/editor/:documentId" element={
               <ApiKeyProtectedRoute>
                 <EditorPage />
