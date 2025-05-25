@@ -32,16 +32,34 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
   const { settings } = useUserSettings();
 
   const generateSuggestions = useCallback(async (textContent: string, currentDocumentTitle?: string) => {
+    console.log('generateSuggestions called with:', {
+      enabled,
+      hasApiKey: !!settings.openai_api_key,
+      contentLength: textContent.length,
+      currentSuggestions: suggestions.length,
+      maxSuggestions: settings.max_suggestions
+    });
+
     if (!enabled || !settings.openai_api_key || suggestions.length >= settings.max_suggestions) {
+      console.log('Skipping suggestion generation:', {
+        enabled,
+        hasApiKey: !!settings.openai_api_key,
+        suggestionsAtMax: suggestions.length >= settings.max_suggestions
+      });
       return;
     }
 
     // Skip if content is too short or is the default placeholder
     const plainTextContent = textContent.replace(/<[^>]*>?/gm, '').trim();
     if (plainTextContent === "Start writing your document here..." || plainTextContent.length < 30) {
+      console.log('Skipping suggestion generation - content too short or placeholder:', {
+        plainTextContent: plainTextContent.substring(0, 50) + '...',
+        length: plainTextContent.length
+      });
       return;
     }
 
+    console.log('Starting AI suggestion generation...');
     setIsGenerating(true);
     setError(null);
 
@@ -59,6 +77,8 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
         }
       });
 
+      console.log('Received AI suggestions:', aiSuggestions);
+
       // Convert AI suggestions to our Suggestion format with position data
       const newSuggestions: Suggestion[] = aiSuggestions.map((suggestion, index) => {
         // Find the position of the original text in the content
@@ -73,6 +93,8 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
         };
       });
 
+      console.log('Converted suggestions with positions:', newSuggestions);
+
       // Filter out suggestions that already exist, where original text doesn't exist in content, or that lack position data
       const filteredSuggestions = newSuggestions.filter(newSuggestion =>
         !suggestions.some(existing => existing.originalText === newSuggestion.originalText) &&
@@ -80,8 +102,13 @@ export const useAISuggestions = ({ content, documentTitle, enabled = true }: Use
         newSuggestion.position !== undefined
       );
 
+      console.log('Filtered suggestions:', filteredSuggestions);
+
       if (filteredSuggestions.length > 0) {
         setSuggestions(prev => [...prev, ...filteredSuggestions].slice(0, settings.max_suggestions));
+        console.log('Added suggestions to state');
+      } else {
+        console.log('No valid suggestions to add');
       }
     } catch (err) {
       console.error('Error generating AI suggestions:', err);
