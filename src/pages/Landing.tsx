@@ -451,23 +451,7 @@ const Landing = () => {
                   <p className="text-xs leading-relaxed">{selectedSuggestion.explanation}</p>
                 </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    onClick={handleAcceptSuggestion}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-xs"
-                    size="sm"
-                  >
-                    Accept
-                  </Button>
-                  <Button 
-                    onClick={handleRejectSuggestion}
-                    variant="outline"
-                    className="flex-1 text-xs"
-                    size="sm"
-                  >
-                    Reject
-                  </Button>
-                </div>
+
               </div>
             </div>
           </DrawerContent>
