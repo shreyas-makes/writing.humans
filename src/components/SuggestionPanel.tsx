@@ -143,6 +143,8 @@ interface SuggestionPanelProps {
   hasApiKey?: boolean;
   suggestions?: Suggestion[];
   error?: string | null;
+  // Position props for alignment
+  suggestionPosition?: { top: number; element: Element } | null;
 }
 
 const SuggestionPanel = ({ 
@@ -150,7 +152,8 @@ const SuggestionPanel = ({
   isGenerating = false,
   hasApiKey = false,
   suggestions = [],
-  error = null
+  error = null,
+  suggestionPosition = null
 }: SuggestionPanelProps) => {
   // Show loading state when generating suggestions
   if (isGenerating) {
@@ -194,23 +197,41 @@ const SuggestionPanel = ({
     );
   }
 
+  // Calculate the transform style for positioning the suggestion content
+  const getPositionStyle = () => {
+    if (!suggestionPosition) {
+      return {}; // Default positioning (top of panel)
+    }
+    
+    // Position the content at the suggestion's vertical position
+    return {
+      transform: `translateY(${suggestionPosition.top}px)`,
+      transition: 'transform 0.2s ease-out'
+    };
+  };
+
   return (
-    <div className="flex flex-col gap-3 p-3">
-      <Card key={suggestion.id} className="space-y-2">
-        <CardHeader className="pb-1">
-        </CardHeader>
-        <CardContent className="pt-0 space-y-4">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Proposed Change:</p>
-            <DiffDisplay originalText={suggestion.originalText} suggestedText={suggestion.suggestedText} />
-          </div>
-          
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
-            <p className="text-xs">{suggestion.explanation}</p>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="relative h-full">
+      <div 
+        className="flex flex-col gap-3 p-3"
+        style={getPositionStyle()}
+      >
+        <Card key={suggestion.id} className="space-y-2">
+          <CardHeader className="pb-1">
+          </CardHeader>
+          <CardContent className="pt-0 space-y-4">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Proposed Change:</p>
+              <DiffDisplay originalText={suggestion.originalText} suggestedText={suggestion.suggestedText} />
+            </div>
+            
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
+              <p className="text-xs">{suggestion.explanation}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -175,7 +175,7 @@ const Landing = () => {
     }
   ];
 
-  const [selectedSuggestion, setSelectedSuggestion] = useState<DemoSuggestion | null>(null);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<DemoSuggestion | null>(demoSuggestions[0]);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState<string[]>([]);
 
   // Redirect if user is already logged in

@@ -6,7 +6,7 @@ interface EditorProps {
   content: string;
   onContentChange: (content: string) => void;
   suggestions?: Suggestion[];
-  onSuggestionIndicatorClick?: (suggestion: Suggestion) => void;
+  onSuggestionIndicatorClick?: (suggestion: Suggestion, indicatorElement?: Element) => void;
   blueIndicatorsVisible?: boolean;
   readOnly?: boolean;
 }
@@ -113,7 +113,7 @@ const Editor = ({ content, onContentChange, suggestions = [], onSuggestionIndica
           // Add click handler
           indicator.addEventListener('click', (e) => {
             e.stopPropagation();
-            onSuggestionIndicatorClick(suggestion);
+            onSuggestionIndicatorClick(suggestion, indicator);
           });
 
           // Position the indicator relative to the container

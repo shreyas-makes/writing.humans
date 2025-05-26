@@ -40,6 +40,7 @@ const EditorPage = () => {
   const [lastSavedTitle, setLastSavedTitle] = useState("");
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
+  const [selectedSuggestionPosition, setSelectedSuggestionPosition] = useState<{ top: number; element: Element } | null>(null);
   const [blueIndicatorsVisible, setBlueIndicatorsVisible] = useState(true);
   
   const isMobile = useIsMobile();
@@ -175,6 +176,7 @@ const EditorPage = () => {
     // Remove from the list of available suggestions
     removeSuggestion(suggestionToAccept.id); 
     setSelectedSuggestion(null); // Clear the selected suggestion
+    setSelectedSuggestionPosition(null); // Clear the position
     
     toast({
       title: "Suggestion accepted",
@@ -195,8 +197,30 @@ const EditorPage = () => {
     });
   };
 
-  const handleSuggestionIndicatorClick = (suggestion: Suggestion) => {
+  const handleSuggestionIndicatorClick = (suggestion: Suggestion, indicatorElement?: Element) => {
     setSelectedSuggestion(suggestion);
+    
+    // Calculate the position of the suggestion relative to the main content area
+    if (indicatorElement) {
+      const rect = indicatorElement.getBoundingClientRect();
+      // Find the main editor container to calculate relative position
+      const editorContainer = document.querySelector('.flex-1.overflow-auto');
+      const editorRect = editorContainer?.getBoundingClientRect();
+      
+      if (editorRect) {
+        // Position relative to the main content area, accounting for scroll
+        const relativeTop = rect.top - editorRect.top + (editorContainer?.scrollTop || 0);
+        setSelectedSuggestionPosition({
+          top: relativeTop,
+          element: indicatorElement
+        });
+      } else {
+        setSelectedSuggestionPosition(null);
+      }
+    } else {
+      setSelectedSuggestionPosition(null);
+    }
+    
     // Optionally, ensure the AI panel is open when a dot is clicked
     if (!aiPanelOpen) {
       setAiPanelOpen(true);
@@ -343,6 +367,7 @@ const EditorPage = () => {
                 const newAiPanelOpenState = !aiPanelOpen;
                 setAiPanelOpen(newAiPanelOpenState);
                 setSelectedSuggestion(null);
+                setSelectedSuggestionPosition(null);
               }}
               className="h-8 w-8 p-0 hover:bg-gray-100"
               title={aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
@@ -413,6 +438,7 @@ const EditorPage = () => {
                 const newAiPanelOpenState = !aiPanelOpen;
                 setAiPanelOpen(newAiPanelOpenState);
                 setSelectedSuggestion(null);
+                setSelectedSuggestionPosition(null);
               }}
               className="h-8 w-8 p-0 hover:bg-gray-100"
               title={aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
@@ -493,6 +519,7 @@ const EditorPage = () => {
               hasApiKey={hasApiKey}
               suggestions={suggestions}
               error={aiError}
+              suggestionPosition={selectedSuggestionPosition}
             />
           </aside>
         )}
@@ -523,6 +550,7 @@ const EditorPage = () => {
                   hasApiKey={hasApiKey}
                   suggestions={suggestions}
                   error={aiError}
+                  suggestionPosition={selectedSuggestionPosition}
                 />
               </div>
             </DrawerContent>
