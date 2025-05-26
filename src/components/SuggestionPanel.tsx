@@ -133,19 +133,60 @@ export interface Suggestion {
   suggestedText: string;
   explanation: string;
   position?: { start: number, end: number };
+  theme?: string;
 }
 
 interface SuggestionPanelProps {
   suggestion: Suggestion | null;
+  isGenerating?: boolean;
+  // Debug props
+  hasApiKey?: boolean;
+  suggestions?: Suggestion[];
+  error?: string | null;
 }
 
 const SuggestionPanel = ({ 
-  suggestion
+  suggestion,
+  isGenerating = false,
+  hasApiKey = false,
+  suggestions = [],
+  error = null
 }: SuggestionPanelProps) => {
+  // Show loading state when generating suggestions
+  if (isGenerating) {
+    return (
+      <div className="h-full flex items-center justify-center p-4">
+        <div className="text-center text-muted-foreground/70 text-xs">
+          <div className="flex items-center justify-center mb-2">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p>Generating AI suggestions...</p>
+          <p className="mt-1 text-xs opacity-70">This should only take a moment</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!suggestion) {
     return (
-      <div className="h-full flex items-end justify-center p-4">
-        <div className="text-center text-muted-foreground/70 text-xs pb-4">
+      <div className="h-full flex flex-col p-4 space-y-4">
+        {/* Error display if present */}
+        {error && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-800 text-xs">
+            <div className="text-red-600 dark:text-red-400">
+              <span className="font-medium">Error:</span> {error}
+            </div>
+            {!hasApiKey && (
+              <div className="mt-2 text-amber-600 dark:text-amber-400">
+                <span className="font-medium">💡 Solution:</span> Go to Settings and add your OpenAI API key
+              </div>
+            )}
+          </div>
+        )}
+
+
+        
+        <div className="text-center text-muted-foreground/70 text-xs">
           <p>No suggestion selected</p>
           <p className="mt-1">Click on a suggestion indicator <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mx-1"></span> in the editor to view details.</p>
         </div>

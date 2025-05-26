@@ -1,0 +1,144 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# AI Suggestion System Architecture
+
+## Core System Components
+
+### Content Analyzer ([ContentAnalyzer](mdc:src/hooks/useAISuggestions.ts))
+
+The `ContentAnalyzer` utility provides comprehensive document analysis:
+
+```typescript
+const ContentAnalyzer = {
+  toPlainText: (content: string) => string,
+  analyzeContent: (content: string) => AnalysisResult,
+  calculateChangeSignificance: (oldContent: string, newContent: string) => ChangeAnalysis
+}
+```
+
+**Key Rules:**
+- Always use `toPlainText()` to convert HTML to analyzable text
+- Check `hasSubstantialContent` flag for meaningful content (50+ chars, 8+ words)
+- Use `estimatedReadingTime` for content-based suggestion typing
+
+### Suggestion Triggering Logic
+
+**Initial Suggestions (First-time analysis):**
+- Fast trigger: 150ms for 10+ words
+- Normal trigger: 400ms for 5+ words or 25+ characters
+- Paste detection: 100ms for bulk content addition
+
+**Subsequent Suggestions (Full document re-analysis):**
+- Time-based: Every 15 seconds for substantial content (50+ words)
+- Change-based: 800ms debounce for significant content changes
+- Periodic checks: Every 90 seconds for comprehensive analysis
+
+### Full Document Analysis Requirements
+
+When implementing suggestion generation, ensure:
+
+1. **Prompt Engineering**
+   - Explicitly instruct AI to analyze ENTIRE document
+   - Emphasize distribution across paragraphs
+   - Warn against clustering in opening sentences
+   - Request suggestions from beginning, middle, and end sections
+
+2. **Content Thresholds**
+   ```typescript
+   const CONTENT_THRESHOLDS = {
+     MIN_WORDS_FIRST: 5,
+     MIN_WORDS_SUBSEQUENT: 8,
+     MAX_SUGGESTIONS_BASE: 6,
+     SUGGESTIONS_PER_100_WORDS: 2
+   }
+   ```
+
+3. **Position Distribution**
+   - Filter suggestions with positional overlap > 10 characters
+   - Ensure theme variety across suggestions
+   - Prevent clustering in same document sections
+
+## Suggestion Processing Pipeline
+
+### 1. Content Analysis
+```typescript
+const currentAnalysis = ContentAnalyzer.analyzeContent(content);
+```
+
+### 2. AI Request with Document-Wide Instructions
+```typescript
+const systemPrompt = `
+CRITICAL REQUIREMENTS:
+- READ THE COMPLETE TEXT from start to finish
+- DISTRIBUTE suggestions across DIFFERENT paragraphs
+- AVOID clustering in opening sentences
+- Look for improvements in MIDDLE and END sections
+`;
+```
+
+### 3. Response Processing
+- Clean JSON response (remove markdown, extract array)
+- Find text positions for each suggestion
+- Categorize by theme (grammar, clarity, conciseness, etc.)
+- Filter overlapping and similar suggestions
+
+### 4. Position-Based Filtering
+```typescript
+const hasPositionalOverlap = suggestion.position && existingSuggestions.some(existing => {
+  const overlapLength = calculateOverlap(suggestion.position, existing.position);
+  return overlapLength > 10; // Prevent clustering
+});
+```
+
+## Configuration Constants
+
+### Timing Configuration
+```typescript
+const TIMING_CONFIG = {
+  INITIAL_FAST: 150,        // Quick response for substantial content
+  INITIAL_NORMAL: 400,      // Standard typing speed
+  PASTE_IMMEDIATE: 100,     // Immediate for paste detection
+  SUBSEQUENT_CHECK: 90000,  // 90 seconds for periodic analysis
+  DEBOUNCE_TYPING: 800,     // Debounce rapid changes
+}
+```
+
+### Content Thresholds
+```typescript
+const CONTENT_THRESHOLDS = {
+  MAX_SUGGESTIONS_BASE: 6,           // Base suggestion count
+  SUGGESTIONS_PER_100_WORDS: 2,      // Additional per 100 words
+  MIN_WORDS_SUBSTANTIAL: 50,         // Threshold for full analysis
+}
+```
+
+## Implementation Checklist
+
+When working on the suggestion system:
+
+- [ ] Ensure AI prompts emphasize ENTIRE document analysis
+- [ ] Implement positional overlap filtering (> 10 chars)
+- [ ] Use theme-based categorization for variety
+- [ ] Set appropriate timing for user experience
+- [ ] Test with multi-paragraph documents
+- [ ] Verify suggestions distribute across document sections
+- [ ] Log content analysis for debugging
+- [ ] Handle edge cases (short content, empty content, placeholder text)
+
+## Error Prevention
+
+1. **Always check content thresholds before AI requests**
+2. **Implement robust JSON parsing with fallbacks**
+3. **Filter invalid suggestions before adding to state**
+4. **Prevent infinite loops with change significance checks**
+5. **Handle API key missing/invalid scenarios gracefully**
+
+## File References
+
+- Hook implementation: [useAISuggestions](mdc:src/hooks/useAISuggestions.ts)
+- OpenAI service: [OpenAIService](mdc:src/lib/openai.ts)
+- UI components: [SuggestionPanel](mdc:src/components/SuggestionPanel.tsx)
+- Editor integration: [Editor](mdc:src/components/Editor.tsx)

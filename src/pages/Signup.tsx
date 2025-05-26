@@ -20,6 +20,8 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (loading) return // Prevent double submission
+    
     if (password !== confirmPassword) {
       return
     }
@@ -30,14 +32,20 @@ const Signup = () => {
 
     setLoading(true)
 
-    const { error } = await signUp(email, password)
-    
-    if (!error) {
-      // Navigate to settings page after successful signup
-      navigate('/settings')
+    try {
+      const { error } = await signUp(email, password)
+      
+      if (!error) {
+        // Navigate to settings page after successful signup
+        setTimeout(() => {
+          navigate('/settings')
+        }, 100)
+      }
+    } catch (err) {
+      console.error('Signup error:', err)
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   return (

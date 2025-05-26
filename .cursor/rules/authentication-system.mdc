@@ -80,9 +80,44 @@ const { user } = useAuth()
 4. **Email Verification** can be enabled in Supabase dashboard
 5. **Password Requirements** enforced (minimum 6 characters)
 
+## Troubleshooting
+
+### Login Page Refresh Issue
+If the login page keeps refreshing when trying to enter credentials:
+
+1. **React StrictMode**: Remove `<StrictMode>` from [src/main.tsx](mdc:src/main.tsx) in development
+2. **Form Submission**: Use `type="button"` with `onClick` handler instead of `type="submit"`
+3. **Double Submission**: Add loading state checks to prevent multiple submissions
+4. **Auth State Timing**: Let auth state changes handle navigation instead of immediate redirects
+
+### Common Patterns for Form Handling
+```tsx
+const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault()
+  e.stopPropagation()
+  
+  if (loading) return // Prevent double submission
+  
+  setLoading(true)
+  try {
+    const { error } = await signIn(email, password)
+    // Let auth state change handle navigation
+  } finally {
+    setLoading(false)
+  }
+}
+```
+
+### Auth State Debugging
+Monitor auth state changes in the console:
+```tsx
+console.log('Auth state change:', event, session?.user?.email)
+```
+
 ## Development Notes
 
 - Authentication state is managed globally via React Context
 - Loading states prevent flash of unauthenticated content
 - Toast notifications provide user feedback for auth actions
 - Automatic redirects maintain user flow after authentication
+- Form submissions use button clicks instead of form submit events to prevent refresh issues

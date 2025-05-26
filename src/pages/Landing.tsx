@@ -280,97 +280,80 @@ const Landing = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b border-border bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16 px-4 max-w-7xl mx-auto">
+        <div className="container flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4 max-w-7xl mx-auto">
           <LogoHeader onClick={() => navigate('/')} />
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={handleSignIn}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button variant="ghost" onClick={handleSignIn} size="sm" className="text-sm">
               Sign In
             </Button>
-            <Button onClick={handleGetStarted} className="bg-blue-600 hover:bg-blue-700">
-              Get Started Free
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button onClick={handleGetStarted} className="bg-blue-600 hover:bg-blue-700 text-sm" size="sm">
+              <span className="hidden sm:inline">Get Started Free</span>
+              <span className="sm:hidden">Start</span>
+              <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
       </header>
 
       {/* Live Editor Demo */}
-      <section className="py-8 px-4">
+      <section className="py-4 sm:py-8 px-3 sm:px-4">
         <div className="container max-w-7xl mx-auto">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
               {/* Editor Section */}
               <div className="flex-1">
-
-                <div ref={containerRef} className="min-h-[500px] border border-gray-200 rounded-lg bg-white relative shadow-lg pl-8">
-                  <div ref={editorRef} className="prose prose-lg max-w-none px-6 pt-16 ml-4 mr-3 pb-16">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                <div ref={containerRef} className="min-h-[400px] sm:min-h-[500px] border border-gray-200 rounded-lg bg-white relative shadow-lg pl-4 sm:pl-6 lg:pl-8">
+                  <div ref={editorRef} className="prose prose-sm sm:prose-lg max-w-none px-3 sm:px-6 pt-8 sm:pt-16 ml-2 sm:ml-4 mr-2 sm:mr-3 pb-8 sm:pb-16">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                       Hey, writing humans!
                     </h1>
                     
-                    <p className="text-gray-700 mb-4 mt-2">
+                    <p className="text-gray-700 mb-3 sm:mb-4 mt-2 text-sm sm:text-base font-bold">
                       This is an AI writing tool for 100% human writing
                     </p>
 
-                    <p className="text-gray-700 mb-4">
+                    <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
                       Confused what this means? Unlike other "AI-powered" writing apps, we let you do the writing, and let AI do what it's best at: suggesting improvements, edits, and fixes.
                     </p>
 
-                    <p className="text-gray-700 mb-4">
+                    <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
                       It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
                     </p>
 
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
-                    </p>
-
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
-                    </p>
-
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
-                    </p>
-
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
-                    </p>
-
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
-                    </p>
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
-                    </p>
-                    <p className="text-gray-700 mb-4">
-                      It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
+                    <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                      {renderTextWithSuggestions('demo-1')} 
                     </p>
                     
-                    <p className="text-gray-700 mb-4">
-                      {renderTextWithSuggestions('demo-1')} The AI will suggest making it more concise and direct.
-                    </p>
-                    
-                    <p className="text-gray-700 mb-4">
+                    <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
                       {renderTextWithSuggestions('demo-2')} Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
                     </p>
                     
-              
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 mb-3 text-sm sm:text-base">
                       {renderTextWithSuggestions('demo-3')}
                     </p>
+
+                    <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                      As you see in the earlier paragraphs, it ruthlessly edits all the AI-flaff and keeps your writing humane.
+                    </p>
+
+                    <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
+                      Sign up for an ideal balance of human writing flow, with an AI guide having your back.
+                    </p>
+
+
                   </div>
                 </div>
               </div>
 
               {/* AI Suggestions Panel */}
               <Card className="w-full lg:w-80 h-fit">
-              
                 {selectedSuggestion ? (
                   <div className="flex flex-col gap-3">
                     <Card key={selectedSuggestion.id} className="space-y-2">
-                      <CardHeader className="pb-1">
+                      <CardHeader className="pb-1 px-3 sm:px-6 pt-3 sm:pt-6">
+                        <h3 className="text-sm font-medium">AI Suggestion</h3>
                       </CardHeader>
-                      <CardContent className="pt-0 space-y-4">
+                      <CardContent className="pt-0 space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
                         <div className="space-y-1">
                           <p className="text-xs font-medium text-muted-foreground">Proposed Change:</p>
                           <DiffDisplay originalText={selectedSuggestion.originalText} suggestedText={selectedSuggestion.suggestedText} />
@@ -378,16 +361,16 @@ const Landing = () => {
                         
                         <div className="space-y-1">
                           <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
-                          <p className="text-xs">{selectedSuggestion.explanation}</p>
+                          <p className="text-xs leading-relaxed">{selectedSuggestion.explanation}</p>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                 ) : (
-                  <div className="h-full flex items-center justify-center p-4">
+                  <div className="h-full flex items-center justify-center p-3 sm:p-4">
                     <div className="text-center text-muted-foreground">
-                      <p>No suggestion selected</p>
-                      <p className="text-sm mt-2">Click on a suggestion indicator <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mx-1"></span> in the left margin to view details.</p>
+                      <p className="text-sm">No suggestion selected</p>
+                      <p className="text-xs mt-2">Click on a suggestion indicator <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mx-1"></span> in the left margin to view details.</p>
                     </div>
                   </div>
                 )}

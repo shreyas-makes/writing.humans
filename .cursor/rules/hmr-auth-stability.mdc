@@ -1,0 +1,44 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# HMR and Authentication Stability Issues
+
+## Problem
+Enabling Hot Module Replacement (HMR) in Vite can lead to instability within the authentication system, particularly in `[src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx)`. HMR can cause the `AuthContext` to re-initialize frequently, leading to its internal state (like loading flags and initialization checks) being reset unpredictably.
+
+This can manifest as:
+- The login page appearing to refresh or user input being lost.
+- The `authLoading` state in the `AuthContext` flipping rapidly between `true` and `false`.
+- Multiple `INITIAL_SESSION` events being processed, sometimes incorrectly identified as duplicates even with HMR-specific guards (like `import.meta.hot.data`).
+- Difficulty in achieving a stable login flow during development.
+
+## Symptoms in Console
+- Repeated logging of `INITIAL_SESSION` events.
+- Logs indicating HMR updates for `AuthContext.tsx` or related files, followed by re-initialization messages from the context.
+- Debug panels showing auth state (e.g., `authLoading`, `user`) resetting frequently.
+
+## Solution
+If a stable development experience for authentication is prioritized over the benefits of HMR for auth-related files, HMR can be disabled in the Vite configuration.
+
+To disable HMR, modify `[vite.config.ts](mdc:vite.config.ts)`:
+
+```typescript
+export default defineConfig({
+  server: {
+    // ... other server config
+    hmr: false, // Set hmr to false
+  },
+  // ... other config
+});
+```
+
+After making this change, the Vite development server **must be restarted**.
+
+Disabling HMR ensures that the `AuthContext` and other parts of the application initialize once per full page load, providing a stable environment for testing authentication flows. The trade-off is that changes to JavaScript modules will require a manual browser refresh to be visible.
+
+## When to Revisit
+This solution should be revisited if:
+- HMR is strongly desired for all parts of the application, and further investigation into more robust HMR-proofing for the `AuthContext` is warranted.
+- Future versions of Vite or React offer improved handling for complex context state with HMR.

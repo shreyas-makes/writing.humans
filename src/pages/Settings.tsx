@@ -24,10 +24,6 @@ const Settings = () => {
     await updateSetting('ai_model', model);
   };
 
-  const handleFrequencyChange = async (frequency: string) => {
-    await updateSetting('suggestion_frequency', frequency);
-  };
-
   const handleApiKeyUpdate = async () => {
     if (apiKeyValue.trim()) {
       const success = await updateApiKey(apiKeyValue.trim());
@@ -154,24 +150,29 @@ const Settings = () => {
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="frequency" className="text-sm font-medium">Suggestion Frequency</Label>
-
-                
-                <Select
-                  value={settings.suggestion_frequency}
-                  onValueChange={handleFrequencyChange}
-                >
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select a frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low (3 minutes)</SelectItem>
-                    <SelectItem value="normal">Normal (1 minute)</SelectItem>
-                    <SelectItem value="high">High (30 seconds)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-sm font-medium">Suggestion Timing</Label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  <div className="space-y-2 text-xs text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                      <span><strong>First suggestion:</strong> Triggers after 2 lines of content (300ms delay)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                      <span><strong>Copy-paste detection:</strong> Immediate suggestions for pasted content (200ms delay)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                      <span><strong>Subsequent suggestions:</strong> Every 3 minutes for content changes</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                      <span><strong>Fallback protection:</strong> 30+ characters if 2-line detection fails (800ms delay)</span>
+                    </div>
+                  </div>
+                </div>
                 <p className="text-xs text-gray-600">
-                  Lower frequencies help optimize API costs while still providing timely feedback.
+                  Optimized timing reduces API costs while providing fast feedback for new users.
                 </p>
               </div>
             </div>

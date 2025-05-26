@@ -9,6 +9,7 @@ interface OpenAIResponse {
       content: string;
     };
   }[];
+
 }
 
 interface SuggestionRequest {
@@ -20,6 +21,7 @@ interface SuggestionRequest {
     title?: string;
     overallGoal?: string; 
   };
+  
 }
 
 interface ParsedSuggestion {
@@ -48,8 +50,9 @@ export class OpenAIService {
         body: JSON.stringify({
           model: model,
           messages: messages,
-          temperature: 0.7,
-          max_tokens: 1000,
+          temperature: 0.3,
+          max_tokens: 800, // Increased for more suggestions
+          stream: false,
         }),
       });
 
@@ -89,102 +92,159 @@ export class OpenAIService {
       throw new Error('OpenAI API key is required');
     }
 
-    let systemPrompt = `You are an advanced writing assistant. Your goal is to provide highly useful and context-aware suggestions.
-    Format your response as a JSON array of suggestion objects. Each object must have "originalText", "suggestedText", and "explanation".
-    If no improvements are genuinely needed for the given text and context, return an empty array.
-    Consider the overall document context if provided.
+    // Calculate dynamic suggestion count based on content length
+    const wordCount = plainText.split(/\s+/).filter(word => word.length > 0).length;
+    const paragraphCount = plainText.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
     
-    For shorter text snippets (early-stage writing), focus on foundational improvements like:
-    - Basic grammar and punctuation
-    - Sentence structure and clarity
-    - Word choice improvements
-    - Simple style enhancements`;
+    // More suggestions for longer content
+    let targetSuggestions = 2; // Base minimum
+    if (wordCount > 100) targetSuggestions = 3;
+    if (wordCount > 200) targetSuggestions = 4;
+    if (wordCount > 400) targetSuggestions = 5;
+    if (paragraphCount > 3) targetSuggestions = Math.min(targetSuggestions + 1, 6);
 
-    let userPromptContent = `The user is working on a document`;
-    if (documentContext?.title) {
-      userPromptContent += ` titled "${documentContext.title}"`;
-    }
-    if (documentContext?.overallGoal) {
-      userPromptContent += ` with the goal: "${documentContext.overallGoal}"`;
-    }
-    userPromptContent += `.\n\nAnalyze the following text snippet from their document:\n\nTEXT_START\n${plainText}\nTEXT_END\n\n`;
+    // Enhanced system prompt for better coverage
+    let systemPrompt = `You are a writing assistant. You MUST analyze the ENTIRE document from beginning to end and provide ${targetSuggestions} specific suggestions to improve different parts throughout the text.
+
+CRITICAL REQUIREMENTS:
+- READ THE COMPLETE TEXT from start to finish - do not stop at the first paragraph
+- DISTRIBUTE your suggestions across DIFFERENT paragraphs and sections
+- AVOID clustering suggestions in just the opening sentences
+- Look for improvements in the MIDDLE and END sections of the text, not just the beginning
+- Each suggestion must target a DIFFERENT sentence or phrase from various parts of the document
+- Focus on variety: grammar, clarity, word choice, flow, conciseness, transitions between paragraphs
+
+JSON FORMAT REQUIREMENTS:
+- Return ONLY a valid JSON array, nothing else
+- Use this EXACT format: [{"originalText": "exact text to improve", "suggestedText": "improved version", "explanation": "brief reason"}]
+- Do NOT include any explanatory text before or after the JSON
+- Do NOT use markdown code blocks (no \`\`\`json)
+- Do NOT add any comments or additional text
+- Start your response with [ and end with ]
+- If fewer than ${targetSuggestions} improvements are needed, return what you find
+
+REMINDER: Your goal is to help improve the ENTIRE document, not just the first few sentences.`;
+
+    // Enhanced user prompt with section awareness
+    let userPromptContent = `Please analyze this COMPLETE document from start to finish and provide ${targetSuggestions} improvements distributed across different paragraphs and sections:
+
+TEXT TO ANALYZE:
+${plainText}
+
+ANALYSIS REQUIREMENTS:
+- Read through ALL paragraphs and sections
+- Identify ${targetSuggestions} different areas for improvement
+- Choose suggestions from VARIOUS parts of the text (beginning, middle, end)
+- Do not focus only on the first paragraph or opening sentences
+
+`;
 
     switch (suggestionType) {
       case 'conciseness':
-        systemPrompt += `\nFocus specifically on making the text more concise and removing redundant words or phrases. Identify sentences or phrases that can be shortened without losing meaning.`;
-        userPromptContent += `Please provide 1-2 suggestions to improve its conciseness.`;
+        userPromptContent += `Focus on making different sections more concise. Look throughout the entire document from beginning to end.`;
         break;
       case 'clarity':
-        systemPrompt += `\nFocus on improving the clarity and readability of the text. Identify ambiguous phrasing, complex sentences that could be simplified, or areas where the meaning is unclear.`;
-        userPromptContent += `Please provide 1-2 suggestions to enhance its clarity.`;
+        userPromptContent += `Focus on improving clarity in various parts of the text. Scan the complete document and find unclear sections throughout.`;
         break;
       case 'engagement':
-        systemPrompt += `\nFocus on making the text more engaging for the reader. Suggest using stronger verbs, more vivid language, or rephrasing to create more impact.`;
-        userPromptContent += `Please provide 1-2 suggestions to make it more engaging.`;
+        userPromptContent += `Focus on making different sections more engaging. Review the entire content and enhance various paragraphs.`;
         break;
       case 'expand':
-        systemPrompt += `\nIdentify a key idea in the text that could be expanded upon. Suggest a follow-up sentence or a brief point of elaboration. The "originalText" should be the sentence/phrase you are suggesting to expand FROM, and "suggestedText" should be the *additional* text to insert or a rephrased version that includes the expansion. The explanation should clarify what this expansion adds.`;
-        userPromptContent += `Analyze the text. If appropriate, suggest one way to expand on an idea presented.`;
+        userPromptContent += `Suggest expansions of ideas from different paragraphs throughout the document.`;
         break;
       case 'rephrase_alternatives':
-         systemPrompt += `\nFor a selected phrase or sentence in the text, offer 2-3 alternative ways to phrase it, each with a slightly different nuance or emphasis. The "originalText" will be the text to rephrase. The "suggestedText" should be one alternative, and the "explanation" can briefly describe the nuance of that alternative. Return multiple suggestion objects if you have multiple alternatives for the *same* originalText.`;
-         userPromptContent += `Please select a sentence or key phrase from the text and offer 2-3 alternative phrasings for it.`;
-         break;
+        userPromptContent += `Offer alternative phrasings for key sentences from various parts of the text, not just the beginning.`;
+        break;
       default: // 'general'
-        systemPrompt += `
-        Analyze the given text and provide 1-3 specific, actionable suggestions for improvement.
-        For each suggestion, provide:
-        1. The exact original text segment that could be improved (a phrase or sentence).
-        2. The suggested replacement text.
-        3. A brief explanation of why this improvement helps.
-
-        Focus on a balance of:
-        - Grammar and clarity
-        - Word choice and conciseness
-        - Tone and readability
-        - Logical flow (if applicable to the snippet)
-        - Removing redundancy
-
-        Only suggest improvements for text that genuinely needs it.`;
-        userPromptContent += `Please analyze this text and provide 1-3 general suggestions for improvement.`;
+        userPromptContent += `Provide ${targetSuggestions} diverse improvements (grammar, clarity, word choice, flow) from different sections throughout the document. Make sure to analyze ALL paragraphs, not just the first one.`;
         break;
     }
-
-    systemPrompt += `\n\nJSON_OUTPUT_STRUCTURE:\n[\n  {\n    "originalText": "exact segment from the provided text that your suggestion refers to",\n    "suggestedText": "the improved version of that segment, or the text to add for expansion",\n    "explanation": "brief, clear explanation of why this suggestion is helpful or what it achieves"\n  }\n]`;
-
 
     const messages: OpenAIMessage[] = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPromptContent }
     ];
 
+    let responseString = '';
+    let cleanedResponse = '';
+    
     try {
-      const responseString = await this.makeRequest(messages, apiKey, model);
+      responseString = await this.makeRequest(messages, apiKey, model);
       
-      const suggestions = JSON.parse(responseString);
+      console.log('🤖 OpenAI raw response:', responseString);
+      console.log(`📊 Content analysis: ${wordCount} words, ${paragraphCount} paragraphs, targeting ${targetSuggestions} suggestions`);
+      
+      // Try to clean up the response if it's not valid JSON
+      cleanedResponse = responseString.trim();
+      
+      // Remove any markdown code blocks if present
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      // Remove any leading/trailing text that's not part of the JSON array
+      const jsonStartIndex = cleanedResponse.indexOf('[');
+      const jsonEndIndex = cleanedResponse.lastIndexOf(']');
+      
+      if (jsonStartIndex !== -1 && jsonEndIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+        cleanedResponse = cleanedResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+      }
+      
+      // Log the cleaned response for debugging
+      console.log('🧹 Cleaned response:', cleanedResponse);
+      
+      const suggestions = JSON.parse(cleanedResponse);
       
       if (!Array.isArray(suggestions)) {
-        console.warn('OpenAI response is not an array, returning empty suggestions. Response:', responseString);
+        console.warn('OpenAI response is not an array, returning empty suggestions. Response:', cleanedResponse);
         return [];
       }
 
-      return suggestions.filter((suggestion: any) => 
+      const validSuggestions = suggestions.filter((suggestion: any) => 
         suggestion.originalText && 
         suggestion.suggestedText && 
         suggestion.explanation &&
         (suggestionType === 'expand' || suggestion.originalText !== suggestion.suggestedText)
       );
+
+      console.log(`✅ Generated ${validSuggestions.length} valid suggestions out of ${suggestions.length} total`);
+      
+      return validSuggestions;
     } catch (error) {
       console.error('Error parsing OpenAI response or generating suggestions:', error);
       if (error instanceof SyntaxError) {
-         // responseString is not in scope here anymore if makeRequest failed before returning a string.
-         // For now, the stubbed makeRequest always returns a valid JSON string, so this path is less likely for SyntaxError from JSON.parse.
-         // However, if makeRequest were to throw an error before returning, responseString would not be defined.
-         console.error("Failed to parse JSON response from OpenAI. The response might have been malformed or the request failed before a response was generated.");
-         throw new Error('Failed to parse AI suggestions due to invalid JSON response.');
+        console.error("Failed to parse JSON response from OpenAI.");
+        console.error("Raw response:", responseString);
+        console.error("Cleaned response:", cleanedResponse);
+        
+        // Try one more time with a different approach - look for JSON-like patterns
+        try {
+          // Try to extract suggestions manually if it's a formatting issue
+          const suggestionPattern = /"originalText":\s*"([^"]*)",\s*"suggestedText":\s*"([^"]*)",\s*"explanation":\s*"([^"]*)"/g;
+          const manualSuggestions: ParsedSuggestion[] = [];
+          let match;
+          
+          while ((match = suggestionPattern.exec(responseString)) !== null) {
+            manualSuggestions.push({
+              originalText: match[1],
+              suggestedText: match[2],
+              explanation: match[3]
+            });
+          }
+          
+          if (manualSuggestions.length > 0) {
+            console.log(`🔧 Recovered ${manualSuggestions.length} suggestions using pattern matching`);
+            return manualSuggestions;
+          }
+        } catch (fallbackError) {
+          console.error('Fallback parsing also failed:', fallbackError);
+        }
+        
+        throw new Error('Failed to parse AI suggestions. The AI returned an invalid JSON format. Please try again.');
       }
-      // For other errors, rethrow a generic or the original error if it's already informative
-      throw new Error(`Failed to generate or parse AI suggestions: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to generate AI suggestions: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 } 

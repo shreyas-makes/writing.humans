@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -11,28 +11,120 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  
+  // Use refs to prevent unnecessary re-renders during HMR
+  const mountedRef = useRef(true)
+  const hasNavigatedRef = useRef(false)
 
   const from = location.state?.from?.pathname || '/'
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  // Debug logging with throttling to prevent spam
+  const lastLogRef = useRef(0)
+  useEffect(() => {
+    const now = Date.now()
+    if (now - lastLogRef.current > 1000) { // Log at most once per second
+      console.log('🔍 Login component state:', {
+        email: email ? 'provided' : 'empty',
+        password: password ? 'provided' : 'empty',
+        loading,
+        authLoading,
+        user: user ? user.email : 'null',
+        from,
+        hasNavigated: hasNavigatedRef.current
+      })
+      lastLogRef.current = now
+    }
+  }, [email, password, loading, authLoading, user, from])
 
-    const { error } = await signIn(email, password)
+  // Redirect if already authenticated - with protection against multiple navigations
+  useEffect(() => {
+    if (!mountedRef.current || hasNavigatedRef.current) return
     
-    if (!error) {
+    if (!authLoading && user) {
+      console.log('🚀 User authenticated, navigating to:', from)
+      hasNavigatedRef.current = true
       navigate(from, { replace: true })
     }
+  }, [user, authLoading, navigate, from])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  const handleLogin = async () => {
+    if (loading || !email || !password || !mountedRef.current) return
     
-    setLoading(false)
+    console.log('🚀 Login attempt started for:', email)
+    setLoading(true)
+
+    try {
+      const { error } = await signIn(email, password)
+      
+      if (!mountedRef.current) return // Component unmounted
+      
+      if (error) {
+        console.error('❌ Login failed:', error)
+        setLoading(false)
+      } else {
+        console.log('✅ Login successful, waiting for auth state update...')
+        // Keep loading true until auth state changes or timeout
+        setTimeout(() => {
+          if (mountedRef.current && !hasNavigatedRef.current) {
+            console.log('⚠️ Login timeout, resetting loading state')
+            setLoading(false)
+          }
+        }, 5000) // 5 second timeout
+      }
+    } catch (err) {
+      console.error('💥 Login error:', err)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
+    }
   }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading && email && password) {
+      e.preventDefault()
+      handleLogin()
+    }
+  }
+
+  // Reset loading when user changes (successful login)
+  useEffect(() => {
+    if (user && loading) {
+      console.log('✅ User authenticated, resetting login loading state')
+      setLoading(false)
+    }
+  }, [user, loading])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        
+{/* Debug Info - Remove this in production 
+        {process.env.NODE_ENV === 'development' && (
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-yellow-800">Debug Info</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-yellow-700">
+              <div>Auth Loading: {authLoading ? 'true' : 'false'}</div>
+              <div>User: {user ? user.email : 'null'}</div>
+              <div>Form Loading: {loading ? 'true' : 'false'}</div>
+              <div>Email: {email ? 'provided' : 'empty'}</div>
+              <div>Password: {password ? 'provided' : 'empty'}</div>
+              <div>Has Navigated: {hasNavigatedRef.current ? 'true' : 'false'}</div>
+            </CardContent>
+          </Card>
+        )} */}
+
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center">
@@ -61,7 +153,7 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
                 <Input
@@ -69,9 +161,10 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   placeholder="Enter your email"
-                  required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
 
@@ -82,9 +175,10 @@ const Login = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   placeholder="Enter your password"
-                  required
                   disabled={loading}
+                  autoComplete="current-password"
                 />
               </div>
 
@@ -98,9 +192,10 @@ const Login = () => {
               </div>
 
               <Button
-                type="submit"
+                type="button"
+                onClick={handleLogin}
                 className="w-full"
-                disabled={loading}
+                disabled={loading || !email || !password}
               >
                 {loading ? (
                   <>
@@ -111,7 +206,7 @@ const Login = () => {
                   'Sign in'
                 )}
               </Button>
-            </form>
+            </div>
           </CardContent>
         </Card>
       </div>

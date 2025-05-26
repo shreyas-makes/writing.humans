@@ -9,12 +9,11 @@
 - Verify the green checkmark appears: "✓ API key is configured and ready to use"
 
 ### 2. **Content Requirements Not Met** 📝
-- Content must be longer than 30 characters
+- **First suggestion**: Triggers after 2 lines of content or 60+ characters (300ms delay)
+- **Copy-paste detection**: Immediate suggestions for pasted content (200ms delay)
+- **Subsequent suggestions**: Every 3 minutes for content changes
+- **Fallback protection**: 30+ characters if 2-line detection fails (800ms delay)
 - Content cannot be the default placeholder: "Start writing your document here..."
-- Write some meaningful text and wait based on your frequency setting:
-  - **Low**: Up to 3 minutes
-  - **Normal**: Up to 1 minute  
-  - **High**: Up to 30 seconds
 
 ### 3. **Maximum Suggestions Reached** 📊
 - Check if you've reached the max suggestions limit (default: 3)
@@ -44,11 +43,11 @@ Open browser developer tools (F12) and look for:
 ### Step 2: Verify Settings
 1. Go to `/settings`
 2. Check API key status
-3. Verify suggestion frequency setting:
-   - **Low (3 minutes)**: Best for cost optimization
-   - **Normal (1 minute)**: Balanced approach
-   - **High (30 seconds)**: Most responsive but higher API usage
-4. Check max suggestions limit
+3. Review suggestion timing information:
+   - **First suggestion**: Triggers after 2 lines of content (300ms delay)
+   - **Copy-paste detection**: Immediate suggestions for pasted content (200ms delay)
+   - **Subsequent suggestions**: Every 3 minutes for content changes
+   - **Fallback protection**: 30+ characters if 2-line detection fails (800ms delay)
 
 ### Step 3: Test with Sample Content
 Replace editor content with:
@@ -76,14 +75,13 @@ In development mode, the AI panel shows debug information including:
 
 ## Expected Behavior
 
-1. **Write content** (30+ characters)
-2. **Wait based on frequency setting** for AI suggestions to generate:
-   - Low: Up to 3 minutes
-   - Normal: Up to 1 minute
-   - High: Up to 30 seconds
-3. **Blue dots appear** in right margin
-4. **Click blue dots** to see suggestions in panel
-5. **Accept/reject** suggestions as needed
+1. **Write content** (2+ lines or 60+ characters)
+2. **First suggestion** appears within 300ms
+3. **Copy-paste content** triggers immediate suggestions (200ms delay)
+4. **Subsequent suggestions** appear every 3 minutes for content changes
+5. **Blue dots appear** in right margin
+6. **Click blue dots** to see suggestions in panel
+7. **Accept/reject** suggestions as needed
 
 ## Still Not Working?
 

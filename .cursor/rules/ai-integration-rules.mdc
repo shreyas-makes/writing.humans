@@ -1,0 +1,108 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# AI Integration Best Practices
+
+## OpenAI API Integration Rules
+
+### JSON Response Parsing
+
+When working with [OpenAIService](mdc:src/lib/openai.ts), always follow these practices:
+
+1. **Robust JSON Parsing**
+   - Always declare response variables outside try blocks for proper error handling scope
+   - Implement multiple fallback parsing strategies (exact match, regex extraction, manual parsing)
+   - Log raw responses in development for debugging
+   - Clean responses by removing markdown code blocks and extracting JSON arrays
+
+2. **System Prompt Design**
+   - Be extremely explicit about JSON format requirements
+   - Include negative instructions (what NOT to include)
+   - Specify exact array structure with examples
+   - Warn against markdown formatting in responses
+
+3. **Error Handling**
+   - Provide specific error messages for different failure types
+   - Implement fallback parsing using regex patterns
+   - Always log both raw and cleaned responses for debugging
+   - Gracefully handle malformed JSON responses
+
+### Example Implementation Pattern
+
+```typescript
+let responseString = '';
+let cleanedResponse = '';
+
+try {
+  responseString = await this.makeRequest(messages, apiKey, model);
+  
+  // Clean response
+  cleanedResponse = responseString.trim();
+  
+  // Remove markdown blocks
+  if (cleanedResponse.startsWith('```json')) {
+    cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  }
+  
+  // Extract JSON array
+  const jsonStart = cleanedResponse.indexOf('[');
+  const jsonEnd = cleanedResponse.lastIndexOf(']');
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd + 1);
+  }
+  
+  const suggestions = JSON.parse(cleanedResponse);
+  
+} catch (error) {
+  if (error instanceof SyntaxError) {
+    // Implement regex fallback parsing
+    const pattern = /"originalText":\s*"([^"]*)",\s*"suggestedText":\s*"([^"]*)",\s*"explanation":\s*"([^"]*)"/g;
+    // ... fallback logic
+  }
+}
+```
+
+## AI Suggestion System Rules
+
+When working with [useAISuggestions](mdc:src/hooks/useAISuggestions.ts):
+
+1. **Content Analysis**
+   - Always analyze the ENTIRE document, not just the first paragraph
+   - Implement periodic analysis for existing content
+   - Use substantial content thresholds (50+ words for full analysis)
+   - Distribute suggestions across different document sections
+
+2. **Timing and Triggering**
+   - Use aggressive timing for better user experience (15s cooldown vs 30s)
+   - Implement both change-based and time-based triggering
+   - Allow manual triggering for user control
+   - Reduce periodic check intervals for more responsive suggestions
+
+3. **Suggestion Filtering**
+   - Prevent clustering by checking positional overlap
+   - Use theme-based categorization for variety
+   - Filter out similar suggestions using both theme and position
+   - Ensure meaningful text changes in all suggestions
+
+## Debugging and Development
+
+1. **Never Ship Debug Panels**
+   - Remove debug information from production UI
+   - Use console logging for development debugging only
+   - Provide user-friendly error messages instead of debug info
+   - Keep manual trigger functionality internal/development only
+
+2. **Error Communication**
+   - Show specific, actionable error messages to users
+   - Highlight API key configuration issues clearly
+   - Provide solution suggestions in error states
+   - Avoid exposing technical implementation details
+
+## File References
+
+- Main AI service: [OpenAIService](mdc:src/lib/openai.ts)
+- Suggestion hook: [useAISuggestions](mdc:src/hooks/useAISuggestions.ts)
+- UI component: [SuggestionPanel](mdc:src/components/SuggestionPanel.tsx)
+- Editor integration: [Editor page](mdc:src/pages/Editor.tsx)

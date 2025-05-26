@@ -7,7 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAISuggestions } from '@/hooks/useAISuggestions';
-import { FileText, ArrowLeft, Settings, User, LogOut, Bold, Italic, Underline, Eye, EyeOff, Share } from 'lucide-react';
+import { FileText, ArrowLeft, Settings, User, LogOut, Bold, Italic, Underline, Eye, EyeOff, Share, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -290,19 +290,21 @@ const EditorPage = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Minimal Header for focused writing */}
       <header className="border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-        <div className="container flex items-center justify-between h-12 px-6">
-          <div className="flex items-center gap-4">
+        <div className="container flex items-center justify-between h-12 sm:h-14 px-3 sm:px-6">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
             <LogoHeader onClick={() => navigate('/home')} minimal />
             <input
               type="text"
               value={documentTitle}
               onChange={(e) => setDocumentTitle(e.target.value)}
-              className="bg-transparent border-none outline-none focus:ring-0 text-base font-medium text-gray-800 placeholder-gray-400"
+              className="bg-transparent border-none outline-none focus:ring-0 text-sm sm:text-base font-medium text-gray-800 placeholder-gray-400 min-w-0 flex-1 truncate"
               placeholder="Untitled Document"
               aria-label="Document title"
             />
           </div>
-          <div className="flex items-center gap-2">
+          
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-2">
             {/* Formatting Options */}
             <div className="flex items-center border-r border-gray-200 pr-2 mr-2">
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" onClick={handleToggleBold} title="Bold">
@@ -371,15 +373,92 @@ const EditorPage = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+          </div>
 
+          {/* Mobile Actions - Essential buttons only */}
+          <div className="flex md:hidden items-center gap-1">
+            {saveStatus === 'unsaved' && (
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            )}
+            {saveStatus === 'saving' && (
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            )}
+            {saveStatus === 'saved' && (
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            )}
             
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleShare}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              title="Share document"
+              disabled={!documentId}
+            >
+              <Share size={16} />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                const newAiPanelOpenState = !aiPanelOpen;
+                setAiPanelOpen(newAiPanelOpenState);
+                setSelectedSuggestion(null);
+              }}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              title={aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
+            >
+              {aiPanelOpen ? <EyeOff size={16} /> : <Eye size={16} />}
+            </Button>
+
+            {/* Mobile User Menu */}
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                    <User size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="text-xs">{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleToggleBold}>
+                    <Bold className="mr-2 h-4 w-4" />
+                    Bold
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleToggleItalic}>
+                    <Italic className="mr-2 h-4 w-4" />
+                    Italic
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleToggleUnderline}>
+                    <Underline className="mr-2 h-4 w-4" />
+                    Underline
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setBlueIndicatorsVisible(!blueIndicatorsVisible)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    {blueIndicatorsVisible ? 'Hide' : 'Show'} Indicators
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </header>
       
       <div className="flex flex-1 overflow-hidden">
         {/* Main Editor - Takes full width when AI panel is closed */}
-        <div className={`flex-1 overflow-auto p-6 md:p-8 ${!aiPanelOpen && "w-full"}`}>
+        <div className={`flex-1 overflow-auto p-3 sm:p-6 md:p-8 ${!aiPanelOpen && "w-full"}`}>
           <Editor 
             content={content} 
             onContentChange={setContent}
@@ -391,15 +470,33 @@ const EditorPage = () => {
         
         {/* AI Suggestions Panel */}
         {aiPanelOpen && (
-          <aside className={`bg-light-gray border-l border-border ${isMobile ? 'fixed inset-y-0 right-0 z-20 w-3/4' : 'w-80 lg:w-96'} overflow-y-auto`}>
-            <div className="sticky top-0 bg-light-gray p-4 border-b border-border">
-              <h2 className="font-medium text-dark-gray">Edits suggested</h2> {/* Changed title */}
-              
-             
-        
+          <aside className={`bg-light-gray border-l border-border ${isMobile ? 'fixed inset-y-0 right-0 z-20 w-full sm:w-3/4' : 'w-80 lg:w-96'} overflow-y-auto`}>
+            <div className="sticky top-0 bg-light-gray p-3 sm:p-4 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-medium text-dark-gray text-sm sm:text-base">Edits suggested</h2>
+                  {isGenerating && (
+                    <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" title="Generating AI suggestions..."></div>
+                  )}
+                </div>
+                {isMobile && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setAiPanelOpen(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X size={16} />
+                  </Button>
+                )}
+              </div>
             </div>
             <SuggestionPanel 
               suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel
+              isGenerating={isGenerating} // Pass loading state for better UX
+              hasApiKey={hasApiKey} // Debug: API key status
+              suggestions={suggestions} // Debug: All suggestions
+              error={aiError} // Debug: Any errors
             />
           </aside>
         )}

@@ -88,7 +88,7 @@ const SharedDocumentPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Document content - clean and focused */}
-      <div className="max-w-4xl mx-auto px-6 py-6 md:px-8 md:py-16">
+      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 md:px-8 md:py-16">
         <Editor 
           content={content} 
           onContentChange={() => {}} // Read-only, no changes allowed
@@ -99,7 +99,7 @@ const SharedDocumentPage = () => {
         />
         
         {/* Subtle footnote */}
-        <div className="mt-4 pt-8 border-t border-gray-100">
+        <div className="mt-4 pt-6 sm:pt-8 border-t border-gray-100">
           <p className="text-xs text-gray-400 text-center">
             This essay is 100% written by a human on{' '}
             <a 
