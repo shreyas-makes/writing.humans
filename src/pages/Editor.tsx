@@ -19,6 +19,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+} from '@/components/ui/drawer';
 import LogoHeader from '@/components/ui/LogoHeader';
 
 const EditorPage = () => {
@@ -468,37 +476,57 @@ const EditorPage = () => {
           />
         </div>
         
-        {/* AI Suggestions Panel */}
-        {aiPanelOpen && (
-          <aside className={`bg-light-gray border-l border-border ${isMobile ? 'fixed inset-y-0 right-0 z-20 w-full sm:w-3/4' : 'w-80 lg:w-96'} overflow-y-auto`}>
+        {/* AI Suggestions Panel - Desktop: Side panel, Mobile: Bottom drawer */}
+        {aiPanelOpen && !isMobile && (
+          <aside className="w-80 lg:w-96 bg-light-gray border-l border-border overflow-y-auto">
             <div className="sticky top-0 bg-light-gray p-3 sm:p-4 border-b border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-medium text-dark-gray text-sm sm:text-base">Edits suggested</h2>
-                  {isGenerating && (
-                    <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" title="Generating AI suggestions..."></div>
-                  )}
-                </div>
-                {isMobile && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setAiPanelOpen(false)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <X size={16} />
-                  </Button>
+              <div className="flex items-center gap-2">
+                <h2 className="font-medium text-dark-gray text-sm sm:text-base">Edits suggested</h2>
+                {isGenerating && (
+                  <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" title="Generating AI suggestions..."></div>
                 )}
               </div>
             </div>
             <SuggestionPanel 
-              suggestion={selectedSuggestion} // Pass the selected suggestion to SuggestionPanel
-              isGenerating={isGenerating} // Pass loading state for better UX
-              hasApiKey={hasApiKey} // Debug: API key status
-              suggestions={suggestions} // Debug: All suggestions
-              error={aiError} // Debug: Any errors
+              suggestion={selectedSuggestion}
+              isGenerating={isGenerating}
+              hasApiKey={hasApiKey}
+              suggestions={suggestions}
+              error={aiError}
             />
           </aside>
+        )}
+        
+        {/* Mobile AI Suggestions - Bottom Drawer */}
+        {isMobile && (
+          <Drawer open={aiPanelOpen} onOpenChange={setAiPanelOpen}>
+            <DrawerContent className="max-h-[80vh] min-h-[400px]">
+              <DrawerHeader className="border-b border-border p-3 sm:p-4">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <DrawerTitle className="text-sm sm:text-base font-medium">Edits suggested</DrawerTitle>
+                    {isGenerating && (
+                      <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" title="Generating AI suggestions..."></div>
+                    )}
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                      <X size={18} />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4">
+                <SuggestionPanel 
+                  suggestion={selectedSuggestion}
+                  isGenerating={isGenerating}
+                  hasApiKey={hasApiKey}
+                  suggestions={suggestions}
+                  error={aiError}
+                />
+              </div>
+            </DrawerContent>
+          </Drawer>
         )}
       </div>
     </div>
