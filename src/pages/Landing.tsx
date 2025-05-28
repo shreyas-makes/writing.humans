@@ -217,35 +217,35 @@ const Landing = () => {
           const indicator = document.createElement('div');
           
           // Enhanced styling with larger size and attention-catching animations
-          indicator.className = `suggestion-indicator absolute w-5 h-5 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-200 z-20 shadow-lg border-2 border-white ${
-            selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-400 ring-offset-2 bg-blue-600' : ''
+          indicator.className = `suggestion-indicator absolute w-5 h-5 bg-blue-600 rounded-full cursor-pointer hover:bg-blue-700 hover:scale-105 transition-all duration-300 ease-out z-20 shadow-md border-2 border-white ${
+            selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-300 ring-offset-1 bg-blue-700 shadow-lg' : ''
           }`;
           
           // Only add animations if this indicator is not currently selected
           if (selectedSuggestion?.id !== suggestion.id) {
-            // Add subtle pulsing animation with CSS
-            indicator.style.animation = 'subtle-pulse 3s infinite';
+            // Add subtle breathing animation with CSS
+            indicator.style.animation = 'indicator-breathe 4s ease-in-out infinite';
             
             // Add initial gentle fade-in animation with delay based on index
             setTimeout(() => {
               // Check again if still not selected before applying animation
               if (selectedSuggestion?.id !== suggestion.id) {
-                indicator.style.animation = 'gentle-fade-in 0.8s ease-out, subtle-pulse 3s infinite 0.8s';
+                indicator.style.animation = 'indicator-fade-in 1s ease-out, indicator-breathe 4s ease-in-out infinite 1s';
               }
-            }, index * 200);
+            }, index * 300);
             
-            // Add periodic gentle attention animation
+            // Add periodic gentle attention animation - much less frequent
             const intervalId = setInterval(() => {
               // Check if still not selected before applying attention animation
               if (selectedSuggestion?.id !== suggestion.id) {
-                indicator.style.animation = 'gentle-glow 2s ease-in-out, subtle-pulse 3s infinite 2s';
+                indicator.style.animation = 'indicator-gentle-attention 2.5s ease-in-out, indicator-breathe 4s ease-in-out infinite 2.5s';
               }
-            }, 12000 + (index * 2000)); // Longer intervals, more staggered
+            }, 20000 + (index * 3000)); // Much longer intervals
             
             // Store interval ID for cleanup
             (indicator as any).intervalId = intervalId;
           } else {
-            // For selected indicators, remove animation
+            // For selected indicators, just show a subtle selected state
             indicator.style.animation = 'none';
           }
           
@@ -266,7 +266,7 @@ const Landing = () => {
           
           // Position the indicator in the left margin - always use a fixed position from container left
           // This ensures it stays in the margin area we allocated with padding
-          const relativeLeft = 10; // Positioned within the increased left padding, adjusted for larger size
+          const relativeLeft = 35; // Positioned within the increased left padding, adjusted for larger size
           
           indicator.style.left = `${relativeLeft}px`;
           indicator.style.top = `${relativeTop}px`;
@@ -284,40 +284,50 @@ const Landing = () => {
       const style = document.createElement('style');
       style.id = 'suggestion-animations';
       style.textContent = `
-        @keyframes subtle-pulse {
+        @keyframes indicator-breathe {
           0%, 100% {
-            box-shadow: 0 0 3px rgba(59, 130, 246, 0.4), 0 0 6px rgba(59, 130, 246, 0.2);
+            opacity: 0.9;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
             transform: scale(1);
           }
           50% {
-            box-shadow: 0 0 6px rgba(59, 130, 246, 0.6), 0 0 12px rgba(59, 130, 246, 0.3);
-            transform: scale(1.02);
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            transform: scale(1.005);
           }
         }
         
-        @keyframes gentle-fade-in {
+        @keyframes indicator-fade-in {
           0% {
             opacity: 0;
-            transform: scale(0.8);
+            transform: scale(0.95);
           }
           100% {
-            opacity: 1;
+            opacity: 0.9;
             transform: scale(1);
           }
         }
         
-        @keyframes gentle-glow {
+        @keyframes indicator-gentle-attention {
           0% {
+            opacity: 0.9;
             transform: scale(1);
-            box-shadow: 0 0 3px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
           }
-          50% {
-            transform: scale(1.08);
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 16px rgba(59, 130, 246, 0.4);
+          25% {
+            opacity: 1;
+            transform: scale(1.01);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.5);
+          }
+          75% {
+            opacity: 1;
+            transform: scale(1.01);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.5);
           }
           100% {
+            opacity: 0.9;
             transform: scale(1);
-            box-shadow: 0 0 3px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
           }
         }
       `;
@@ -483,7 +493,7 @@ const Landing = () => {
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center">
           {/* Editor Section */}
           <div className="w-full max-w-[900px] overflow-x-hidden">
-            <div ref={containerRef} className="border border-gray-200 rounded-lg bg-white relative shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 pl-8 sm:pl-10 md:pl-12 lg:pl-14 pr-8 sm:pr-10 md:pr-12 lg:pr-14">
+            <div ref={containerRef} className="border border-gray-200 rounded-lg bg-white relative shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 pl-12 sm:pl-16 md:pl-20 lg:pl-24 pr-8 sm:pr-10 md:pr-12 lg:pr-14">
               <div ref={editorRef} className="prose prose-sm sm:prose-base md:prose-lg lg:prose-xl max-w-none py-4 sm:py-6 break-words">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-6 md:mb-8">
                   Hey, writing humans!
@@ -525,31 +535,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Mobile AI Suggestions - Bottom Sheet */}
-      {isMobile && selectedSuggestion && (
-        <Drawer open={!!selectedSuggestion} onOpenChange={(open) => !open && setSelectedSuggestion(null)}>
-          <DrawerContent className="max-h-[80vh] min-h-[250px]">
-            <DrawerHeader className="border-b border-border py-2">
-              <DrawerTitle className="text-sm">AI Suggestion</DrawerTitle>
-            </DrawerHeader>
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Proposed Change:</p>
-                  <DiffDisplay originalText={selectedSuggestion.originalText} suggestedText={selectedSuggestion.suggestedText} />
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
-                  <p className="text-xs leading-relaxed">{selectedSuggestion.explanation}</p>
-                </div>
-
-
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
-      )}
+      
     </div>
   );
 };
