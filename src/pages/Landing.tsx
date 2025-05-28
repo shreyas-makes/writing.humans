@@ -177,6 +177,7 @@ const Landing = () => {
 
   const [selectedSuggestion, setSelectedSuggestion] = useState<DemoSuggestion | null>(demoSuggestions[0]);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState<string[]>([]);
+  const [showingDiffFor, setShowingDiffFor] = useState<string | null>(null);
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -194,10 +195,17 @@ const Landing = () => {
 
       // Remove existing suggestion indicators
       const existingIndicators = containerRef.current.querySelectorAll('.suggestion-indicator');
-      existingIndicators.forEach(indicator => indicator.remove());
+      existingIndicators.forEach(indicator => {
+        // Clean up any intervals before removing
+        const intervalId = (indicator as any).intervalId;
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+        indicator.remove();
+      });
 
       // Add new suggestion indicators for non-accepted suggestions
-      demoSuggestions.forEach(suggestion => {
+      demoSuggestions.forEach((suggestion, index) => {
         if (acceptedSuggestions.includes(suggestion.id)) return;
 
         try {
@@ -207,9 +215,40 @@ const Landing = () => {
 
           // Create the indicator element positioned relative to the container
           const indicator = document.createElement('div');
-          indicator.className = `suggestion-indicator absolute w-2.5 h-2.5 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-200 z-10 shadow-md ${
-            selectedSuggestion?.id === suggestion.id ? 'ring-1 ring-blue-300 ring-offset-1' : ''
+          
+          // Enhanced styling with larger size and attention-catching animations
+          indicator.className = `suggestion-indicator absolute w-5 h-5 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-200 z-20 shadow-lg border-2 border-white ${
+            selectedSuggestion?.id === suggestion.id ? 'ring-2 ring-blue-400 ring-offset-2 bg-blue-600' : ''
           }`;
+          
+          // Only add animations if this indicator is not currently selected
+          if (selectedSuggestion?.id !== suggestion.id) {
+            // Add subtle pulsing animation with CSS
+            indicator.style.animation = 'subtle-pulse 3s infinite';
+            
+            // Add initial gentle fade-in animation with delay based on index
+            setTimeout(() => {
+              // Check again if still not selected before applying animation
+              if (selectedSuggestion?.id !== suggestion.id) {
+                indicator.style.animation = 'gentle-fade-in 0.8s ease-out, subtle-pulse 3s infinite 0.8s';
+              }
+            }, index * 200);
+            
+            // Add periodic gentle attention animation
+            const intervalId = setInterval(() => {
+              // Check if still not selected before applying attention animation
+              if (selectedSuggestion?.id !== suggestion.id) {
+                indicator.style.animation = 'gentle-glow 2s ease-in-out, subtle-pulse 3s infinite 2s';
+              }
+            }, 12000 + (index * 2000)); // Longer intervals, more staggered
+            
+            // Store interval ID for cleanup
+            (indicator as any).intervalId = intervalId;
+          } else {
+            // For selected indicators, remove animation
+            indicator.style.animation = 'none';
+          }
+          
           indicator.title = 'Click to see AI suggestion';
           
           // Add click handler
@@ -223,11 +262,11 @@ const Landing = () => {
           const containerRect = containerRef.current.getBoundingClientRect();
           
           // Calculate position relative to the container
-          const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 5;
+          const relativeTop = targetRect.top - containerRect.top + targetRect.height / 2 - 10; // Adjusted for larger size
           
           // Position the indicator in the left margin - always use a fixed position from container left
           // This ensures it stays in the margin area we allocated with padding
-          const relativeLeft = 12; // Positioned within the increased left padding
+          const relativeLeft = 10; // Positioned within the increased left padding, adjusted for larger size
           
           indicator.style.left = `${relativeLeft}px`;
           indicator.style.top = `${relativeTop}px`;
@@ -239,6 +278,51 @@ const Landing = () => {
         }
       });
     };
+
+    // Add CSS animations if not already added
+    if (!document.getElementById('suggestion-animations')) {
+      const style = document.createElement('style');
+      style.id = 'suggestion-animations';
+      style.textContent = `
+        @keyframes subtle-pulse {
+          0%, 100% {
+            box-shadow: 0 0 3px rgba(59, 130, 246, 0.4), 0 0 6px rgba(59, 130, 246, 0.2);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.6), 0 0 12px rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+          }
+        }
+        
+        @keyframes gentle-fade-in {
+          0% {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes gentle-glow {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 3px rgba(59, 130, 246, 0.4);
+          }
+          50% {
+            transform: scale(1.08);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.7), 0 0 16px rgba(59, 130, 246, 0.4);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 3px rgba(59, 130, 246, 0.4);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     // Position indicators initially
     positionIndicators();
@@ -253,17 +337,27 @@ const Landing = () => {
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
+      // Clean up the style element when component unmounts
+      const style = document.getElementById('suggestion-animations');
+      if (style) {
+        style.remove();
+      }
     };
   }, [selectedSuggestion, acceptedSuggestions, demoSuggestions]);
 
   const handleSuggestionClick = (suggestion: DemoSuggestion) => {
     setSelectedSuggestion(suggestion);
+    // Toggle diff view for the clicked suggestion
+    setShowingDiffFor(showingDiffFor === suggestion.id ? null : suggestion.id);
   };
 
   const handleAcceptSuggestion = () => {
     if (selectedSuggestion) {
       const newAccepted = [...acceptedSuggestions, selectedSuggestion.id];
       setAcceptedSuggestions(newAccepted);
+      
+      // Clear diff view for accepted suggestion
+      setShowingDiffFor(null);
       
       // Find next available (non-accepted) suggestion
       const remainingSuggestions = demoSuggestions.filter(s => !newAccepted.includes(s.id));
@@ -313,6 +407,38 @@ const Landing = () => {
     if (!suggestion) return null;
 
     const isAccepted = acceptedSuggestions.includes(suggestionId);
+    const isShowingDiff = showingDiffFor === suggestionId;
+
+    // If showing diff, render the diff inline
+    if (isShowingDiff && !isAccepted) {
+      const originalWords = splitText(suggestion.originalText);
+      const suggestedWords = splitText(suggestion.suggestedText);
+      const lcs = computeLCS(originalWords, suggestedWords);
+      const diffs = generateDiff(originalWords, suggestedWords, lcs);
+
+      return (
+        <span 
+          className="inline-block"
+          data-suggestion-id={suggestionId}
+        >
+          {diffs.map(([type, text], index) => {
+            if (type === 0) { // Common
+              return <span key={index}>{text}</span>;
+            } else if (type === -1) { // Deleted
+              if (text.trim() === '' && text.includes('\n')) return <span key={index}>{text}</span>;
+              if (text.trim() === '') return <span key={index}>{text}</span>;
+              return <span key={index} className="bg-red-500/20 dark:bg-red-500/30 line-through decoration-red-500/70 dark:decoration-red-400/70 rounded-sm px-0.5 mx-[-0.5px]">{text}</span>;
+            } else { // Added (type === 1)
+              if (text.trim() === '' && text.includes('\n')) return <span key={index}>{text}</span>;
+              if (text.trim() === '') return <span key={index}>{text}</span>;
+              return <span key={index} className="bg-green-500/20 dark:bg-green-500/30 rounded-sm px-0.5 mx-[-0.5px]">{text}</span>;
+            }
+          })}
+        </span>
+      );
+    }
+
+    // Otherwise show original or accepted text
     const displayText = isAccepted ? suggestion.suggestedText : suggestion.originalText;
 
     return (
@@ -354,81 +480,48 @@ const Landing = () => {
 
       {/* Live Editor Demo */}
       <section className="py-2 sm:py-4 md:py-6 lg:py-8 px-2 sm:px-4 md:px-6 lg:px-8 max-w-[1400px] mx-auto">
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-center">
           {/* Editor Section */}
-          <div className="flex-1 w-full max-w-full lg:max-w-[900px] lg:mx-0 overflow-x-hidden">
+          <div className="w-full max-w-[900px] overflow-x-hidden">
             <div ref={containerRef} className="border border-gray-200 rounded-lg bg-white relative shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 pl-8 sm:pl-10 md:pl-12 lg:pl-14 pr-8 sm:pr-10 md:pr-12 lg:pr-14">
               <div ref={editorRef} className="prose prose-sm sm:prose-base md:prose-lg lg:prose-xl max-w-none py-4 sm:py-6 break-words">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-6 md:mb-8">
                   Hey, writing humans!
                 </h1>
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base font-bold">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-lg sm:text-xl md:text-2xl font-bold underline">
                   This is an AI writing tool for 100% human writing
                 </p>
 
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   Confused what this means? Unlike other "AI-powered" writing apps, we let you do the writing, and let AI do what it's best at: suggesting improvements, edits, and fixes.
                 </p>
 
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   It's a simple writing app, and each small detail and feature had to fight it's existence to make the final cut. Get into your writing flow state easily.
                 </p>
 
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   {renderTextWithSuggestions('demo-1')} 
                 </p>
                 
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   {renderTextWithSuggestions('demo-2')} Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
                 </p>
                 
-                <p className="text-gray-700 mb-3 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   {renderTextWithSuggestions('demo-3')}
                 </p>
 
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   As you see in the earlier paragraphs, it ruthlessly edits all the AI-flaff and keeps your writing humane.
                 </p>
 
-                <p className="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
+                <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
                   Sign up for an ideal balance of human writing flow, with an AI guide having your back.
                 </p>
               </div>
             </div>
           </div>
-
-          {/* AI Suggestions Panel - Desktop: Side panel */}
-          {!isMobile && (
-            <Card className="w-full lg:w-80 h-fit lg:sticky lg:top-24">
-              {selectedSuggestion ? (
-                <div className="flex flex-col gap-3">
-                  <Card key={selectedSuggestion.id} className="space-y-2">
-                    <CardHeader className="pb-1 px-3 sm:px-4 pt-3 sm:pt-4">
-                      <h3 className="text-sm font-medium">AI Suggestion</h3>
-                    </CardHeader>
-                    <CardContent className="pt-0 space-y-3 px-3 sm:px-4 pb-3 sm:pb-4">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Proposed Change:</p>
-                        <DiffDisplay originalText={selectedSuggestion.originalText} suggestedText={selectedSuggestion.suggestedText} />
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Explanation:</p>
-                        <p className="text-xs leading-relaxed">{selectedSuggestion.explanation}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center p-3 sm:p-4">
-                  <div className="text-center text-muted-foreground">
-                    <p className="text-sm">No suggestion selected</p>
-                    <p className="text-xs mt-2">Click on a suggestion indicator <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mx-1"></span> in the left margin to view details.</p>
-                  </div>
-                </div>
-              )}
-            </Card>
-          )}
         </div>
       </section>
 
