@@ -12,6 +12,39 @@ A clean, minimal document editor with AI suggestions and persistent data storage
 - 📂 Document management (create, save, load, delete)
 - ⚡ Real-time sync across devices
 
+### Interactive Suggestion System
+
+The editor now includes an interactive suggestion system similar to modern code editors:
+
+#### Visual Indicators
+- **Blue dots**: Positioned next to lines with AI suggestions
+- **Dotted underlines**: Text that has suggestions is highlighted with blue dotted underlines
+- **Hover effects**: Suggestion text becomes highlighted when hovered
+
+#### Interaction Methods
+1. **Click blue indicators**: Click the blue dots in the margin to view suggestions
+2. **Click highlighted text**: Click directly on text with dotted underlines to toggle diff view
+3. **Keyboard shortcuts**: When viewing a diff:
+   - `Enter` - Accept the suggestion
+   - `Escape` - Reject the suggestion
+
+#### Diff Display
+- **Green highlighting**: Shows added/new text
+- **Red strikethrough**: Shows removed/deleted text
+- **Inline buttons**: Accept/Reject buttons appear next to each suggestion
+- **Toggle view**: Click the same text again to hide the diff
+
+#### Mobile Support
+- Touch-friendly button sizes
+- Responsive layout that works on all devices
+- Drawer interface for suggestions on mobile
+
+### AI-Powered Suggestions
+- Real-time content analysis
+- Context-aware improvements
+- Grammar and style suggestions
+- Conciseness and clarity improvements
+
 ## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite
@@ -91,6 +124,12 @@ documents (
 - **Documents Panel**: Toggle with the "Documents" button in the header
 - **AI Suggestions Panel**: Toggle with the "Show/Hide AI Suggestions" button
 - **Mobile Responsive**: Panels automatically adapt for mobile devices
+
+1. Start writing in the editor
+2. Blue indicators will appear next to text with suggestions
+3. Click the indicators or highlighted text to see suggested changes
+4. Review the diff showing additions (green) and deletions (red)
+5. Accept or reject suggestions using buttons or keyboard shortcuts
 
 ## Project Structure
 

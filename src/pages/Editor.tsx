@@ -42,6 +42,7 @@ const EditorPage = () => {
   const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
   const [selectedSuggestionPosition, setSelectedSuggestionPosition] = useState<{ top: number; element: Element } | null>(null);
   const [blueIndicatorsVisible, setBlueIndicatorsVisible] = useState(true);
+  const [showingDiffFor, setShowingDiffFor] = useState<string | null>(null);
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -177,6 +178,7 @@ const EditorPage = () => {
     removeSuggestion(suggestionToAccept.id); 
     setSelectedSuggestion(null); // Clear the selected suggestion
     setSelectedSuggestionPosition(null); // Clear the position
+    setShowingDiffFor(null); // Clear the diff view
     
     toast({
       title: "Suggestion accepted",
@@ -190,6 +192,7 @@ const EditorPage = () => {
     // Remove from the list of available suggestions
     removeSuggestion(suggestionToReject.id);
     setSelectedSuggestion(null); // Clear the selected suggestion
+    setShowingDiffFor(null); // Clear the diff view
     
     toast({
       title: "Suggestion rejected",
@@ -199,6 +202,9 @@ const EditorPage = () => {
 
   const handleSuggestionIndicatorClick = (suggestion: Suggestion, indicatorElement?: Element) => {
     setSelectedSuggestion(suggestion);
+    
+    // Toggle diff view for the clicked suggestion
+    setShowingDiffFor(showingDiffFor === suggestion.id ? null : suggestion.id);
     
     // Calculate the position of the suggestion relative to the main content area
     if (indicatorElement) {
@@ -368,6 +374,7 @@ const EditorPage = () => {
                 setAiPanelOpen(newAiPanelOpenState);
                 setSelectedSuggestion(null);
                 setSelectedSuggestionPosition(null);
+                setShowingDiffFor(null);
               }}
               className="h-8 w-8 p-0 hover:bg-gray-100"
               title={aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
@@ -439,6 +446,7 @@ const EditorPage = () => {
                 setAiPanelOpen(newAiPanelOpenState);
                 setSelectedSuggestion(null);
                 setSelectedSuggestionPosition(null);
+                setShowingDiffFor(null);
               }}
               className="h-8 w-8 p-0 hover:bg-gray-100"
               title={aiPanelOpen ? "Hide AI Suggestions" : "Show AI Suggestions"}
@@ -499,6 +507,9 @@ const EditorPage = () => {
             suggestions={suggestions} // Pass all suggestions to Editor
             onSuggestionIndicatorClick={handleSuggestionIndicatorClick} // Pass handler for dot clicks
             blueIndicatorsVisible={blueIndicatorsVisible}
+            showingDiffFor={showingDiffFor}
+            onAcceptSuggestion={handleAcceptSuggestion}
+            onRejectSuggestion={handleRejectSuggestion}
           />
         </div>
         

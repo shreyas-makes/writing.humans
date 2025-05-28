@@ -523,11 +523,11 @@ const Landing = () => {
                 </p>
 
                 <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
-                  As you see in the earlier paragraphs, it ruthlessly edits all the AI-flaff and keeps your writing humane.
+                  As you see in the earlier paragraphs, it ruthlessly edits all the AI-flaff and keeps your writing humane (while you retain complete control over the final text).
                 </p>
 
                 <p className="text-gray-700 mb-4 sm:mb-6 text-base sm:text-lg md:text-xl font-semibold">
-                  Sign up for an ideal balance of human writing flow, with an AI guide having your back.
+                  Sign up to the waitlist for early access.
                 </p>
               </div>
             </div>
