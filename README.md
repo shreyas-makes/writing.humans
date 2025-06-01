@@ -1,8 +1,8 @@
 <div align="center">
 
-# ✍️ writing.humans
+# ✍️ Hey, writing humans!
 
-### AI-Assisted Document Editor for the Modern Writer
+### AI writing tool for 100% human writing
 
 *Clean, minimal document editing with intelligent AI suggestions and seamless cloud sync*
 
@@ -19,15 +19,28 @@
 
 </div>
 
-<img width="1211" alt="Screenshot 2025-06-01 at 7 55 32 PM" src="https://github.com/user-attachments/assets/252824b1-65f9-4c74-ac47-4488ee5b8525" />
+## 🤔 What does this mean?
 
-### ✨ Core Features
+**Confused what this means?** Unlike other "AI-powered" writing apps, we let you do the writing, and let AI do what it's best at: suggesting improvements, edits, and fixes.
+
+It's a simple writing app, and each small detail and feature had to fight its existence to make the final cut. Get into your writing flow state easily.
+
+Writing compelling content requires skill and practice. Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
+
+Join writers who use our platform to create impactful content that achieves their goals.
+
+As you write, it ruthlessly edits all the AI-fluff and keeps your writing humane (while you retain complete control over the final text).
+
+## ✨ Core Features
+
 Experience a clean, distraction-free writing environment with our rich text editor. Our AI-powered suggestions provide intelligent writing assistance and improvements as you work. Your documents are automatically synced to the cloud via our Supabase backend, ensuring your work is always safe and accessible. The responsive design works seamlessly across desktop and mobile devices, while auto-save functionality means you'll never lose your progress. Easily create, organize and manage all your documents in one place.
 
-### 🎯 AI Assistance
+## 🎯 AI Assistance
+
 Our intelligent AI system provides subtle visual indicators with blue dots and underlines to show where suggestions are available. An interactive diff view clearly displays proposed changes, with context-aware suggestions that adapt to your unique writing style and content. Smart suggestion density limits prevent overwhelming feedback, while multiple interaction methods - including clicks, hovers, and keyboard shortcuts - let you work the way you prefer.
 
-### 📱 User Experience
+## 📱 User Experience
+
 Writing.humans is built mobile-first with a touch-friendly interface that works smoothly on all devices. Power users will appreciate the comprehensive keyboard shortcuts for quick actions. Your changes sync in real-time across all your devices, and offline support means you can keep writing even without an internet connection.
 
 ## 🛠️ Tech Stack
@@ -186,13 +199,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **[Radix UI](https://www.radix-ui.com/)** - For accessible, unstyled UI components
 - **[Tailwind CSS](https://tailwindcss.com/)** - For the utility-first CSS framework
 - **[Vite](https://vitejs.dev/)** - For the lightning-fast build tool
-
-## 💬 Community & Support
-
-- 📫 **Questions**: Open a [GitHub Discussion](../../discussions)
-- 🐛 **Bug Reports**: Use [GitHub Issues](../../issues)
-- 💬 **Chat**: Join our [Discord Community](#) (coming soon)
-- 🐦 **Updates**: Follow [@writinghumans](#) (coming soon)
 
 ---
 
