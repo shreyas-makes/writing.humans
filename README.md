@@ -19,12 +19,9 @@
 
 </div>
 
-## 📖 Demo
+<img width="1431" alt="Screenshot 2025-05-28 at 10 00 28 PM" src="https://github.com/user-attachments/assets/17046923-caf5-4b36-9273-ed5f9ad08286" />
 
-> **Coming Soon**: Live demo and screenshots will be added here
 
-<!-- 
-![writing.humans Demo](docs/images/demo.gif)
 
 ### Key Features Preview
 ![Feature 1](docs/images/feature-1.png) | ![Feature 2](docs/images/feature-2.png)
