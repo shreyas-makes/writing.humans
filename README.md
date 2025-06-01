@@ -19,7 +19,8 @@
 
 </div>
 
-<img width="894" alt="Screenshot 2025-06-01 at 7 54 06 PM" src="https://github.com/user-attachments/assets/7438d815-c495-4284-abcd-2f11b871d5b4" />
+<img width="1211" alt="Screenshot 2025-06-01 at 7 55 32 PM" src="https://github.com/user-attachments/assets/252824b1-65f9-4c74-ac47-4488ee5b8525" />
+
 
 ### Key Features Preview
 ![Feature 1](docs/images/feature-1.png) | ![Feature 2](docs/images/feature-2.png)
