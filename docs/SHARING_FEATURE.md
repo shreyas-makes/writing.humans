@@ -44,7 +44,7 @@ The sharing functionality is built on a new `document_shares` table with the fol
 2. The shared document page shows:
    - Document title and content in read-only mode
    - "Shared Document" badge
-   - Link to create an account on Blue Scribe
+   - Link to create an account on writing.humans
    - No AI suggestions or editing capabilities
 
 ### Error Handling

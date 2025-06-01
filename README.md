@@ -12,8 +12,6 @@ A clean, minimal document editor with AI suggestions and persistent data storage
 - 📂 Document management (create, save, load, delete)
 - ⚡ Real-time sync across devices
 
-### Interactive Suggestion System
-
 The editor now includes an interactive suggestion system similar to modern code editors:
 
 #### Visual Indicators
@@ -58,7 +56,7 @@ The editor now includes an interactive suggestion system similar to modern code 
 
 ```bash
 git clone <your-repo-url>
-cd blue-scribe-suggest
+cd writing-humans
 npm install
 ```
 
