@@ -1,208 +1,230 @@
-# writing.humans - AI-Assisted Document Editor
+<div align="center">
 
-A clean, minimal document editor with AI suggestions and persistent data storage using Supabase.
+# ✍️ writing.humans
 
-## Features
+### AI-Assisted Document Editor for the Modern Writer
 
-- 📝 Rich text editing with formatting controls
-- 🤖 AI-powered writing suggestions
-- 💾 Persistent document storage with Supabase
-- 📱 Responsive design for mobile and desktop
-- 🔄 Auto-save functionality
-- 📂 Document management (create, save, load, delete)
-- ⚡ Real-time sync across devices
+*Clean, minimal document editing with intelligent AI suggestions and seamless cloud sync*
 
-The editor now includes an interactive suggestion system similar to modern code editors:
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-#### Visual Indicators
-- **Blue dots**: Positioned next to lines with AI suggestions
-- **Dotted underlines**: Text that has suggestions is highlighted with blue dotted underlines
-- **Hover effects**: Suggestion text becomes highlighted when hovered
+[📖 Demo](#-demo) • [🚀 Quick Start](#-quick-start) • [📋 Features](#-features) • [🤝 Contributing](#-contributing)
 
-#### Interaction Methods
-1. **Click blue indicators**: Click the blue dots in the margin to view suggestions
-2. **Click highlighted text**: Click directly on text with dotted underlines to toggle diff view
-3. **Keyboard shortcuts**: When viewing a diff:
-   - `Enter` - Accept the suggestion
-   - `Escape` - Reject the suggestion
+---
 
-#### Diff Display
-- **Green highlighting**: Shows added/new text
-- **Red strikethrough**: Shows removed/deleted text
-- **Inline buttons**: Accept/Reject buttons appear next to each suggestion
-- **Toggle view**: Click the same text again to hide the diff
+</div>
 
-#### Mobile Support
-- Touch-friendly button sizes
-- Responsive layout that works on all devices
-- Drawer interface for suggestions on mobile
+## 📖 Demo
 
-### AI-Powered Suggestions
-- Real-time content analysis
-- Context-aware improvements
-- Grammar and style suggestions
-- Conciseness and clarity improvements
+> **Coming Soon**: Live demo and screenshots will be added here
 
-## Tech Stack
+<!-- 
+![writing.humans Demo](docs/images/demo.gif)
 
-- **Frontend**: React 18, TypeScript, Vite
-- **UI**: Tailwind CSS, Radix UI components
-- **Database**: Supabase (PostgreSQL)
-- **State Management**: React hooks, TanStack Query
+### Key Features Preview
+![Feature 1](docs/images/feature-1.png) | ![Feature 2](docs/images/feature-2.png)
+:---: | :---:
+AI Suggestions | Document Management
+-->
 
-## Setup Instructions
+## 🌟 Features
 
-### 1. Clone and Install Dependencies
+### ✨ Core Features
+- 📝 **Rich Text Editor** - Clean, distraction-free writing experience
+- 🤖 **AI-Powered Suggestions** - Intelligent writing assistance and improvements
+- 💾 **Cloud Sync** - Persistent storage with Supabase backend
+- 📱 **Responsive Design** - Works seamlessly on desktop and mobile
+- 🔄 **Auto-Save** - Never lose your work with automatic saving
+- 📂 **Document Management** - Create, organize, and manage your documents
+
+### 🎯 AI Assistance
+- **Visual Indicators** - Blue dots and underlines show suggestion locations
+- **Interactive Diff View** - See exactly what changes are suggested
+- **Context-Aware** - Suggestions based on your writing style and content
+- **Smart Limits** - Automatically calculated suggestion density
+- **Multiple Interaction Methods** - Click, hover, or use keyboard shortcuts
+
+### 📱 User Experience
+- **Mobile-First Design** - Touch-friendly interface for all devices
+- **Keyboard Shortcuts** - Power user shortcuts for quick actions
+- **Real-time Sync** - Changes sync across all your devices
+- **Offline Support** - Continue writing even without internet
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| **Frontend** | React 18, TypeScript, Vite |
+| **Styling** | Tailwind CSS, Radix UI |
+| **Backend** | Supabase (PostgreSQL) |
+| **State Management** | React Hooks, TanStack Query |
+| **Build Tool** | Vite |
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+ and npm
+- A Supabase account (free tier available)
+
+### 1️⃣ Clone & Install
 
 ```bash
-git clone <your-repo-url>
-cd writing-humans
+git clone https://github.com/yourusername/writing.humans.git
+cd writing.humans
 npm install
 ```
 
-### 2. Set up Supabase
+### 2️⃣ Database Setup
 
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. In your Supabase dashboard, go to the SQL Editor
-3. Copy and paste the contents of `supabase-schema.sql` and run it
-4. Go to Settings → API to get your project URL and anon key
+1. Create a new project at [supabase.com](https://supabase.com)
+2. In your Supabase dashboard, navigate to the SQL Editor
+3. Copy and execute the schema from `supabase-schema.sql`
+4. Get your project URL and anon key from Settings → API
 
-### 3. Configure Environment Variables
+### 3️⃣ Environment Configuration
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the project root:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Replace the placeholder values with your actual Supabase project URL and anon key.
-
-### 4. Run the Application
+### 4️⃣ Launch
 
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+Visit `http://localhost:5173` and start writing! 🎉
 
-## Database Schema
-
-The application uses a simple `documents` table with the following structure:
-
-```sql
-documents (
-  id UUID PRIMARY KEY,
-  title TEXT,
-  content TEXT,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-)
-```
-
-## Usage
+## 📚 Usage Guide
 
 ### Document Management
 
-- **Create New Document**: Click the "New" button in the documents sidebar or header
-- **Save Document**: Click the "Save" button or use auto-save (every 30 seconds)
-- **Load Document**: Click on any document in the documents list
-- **Delete Document**: Click the trash icon next to a document in the list
+| Action | Method |
+|--------|--------|
+| **Create Document** | Click "New" button or use `Ctrl+N` |
+| **Save Document** | Click "Save" or auto-save (every 30s) |
+| **Load Document** | Click document in sidebar |
+| **Delete Document** | Click trash icon next to document |
 
-### Writing Features
+### AI Suggestions
 
-- **Rich Text Editing**: Use the formatting toolbar for bold, italic, and underline
-- **AI Suggestions**: The AI panel provides real-time writing suggestions
-- **Smart Suggestion Limits**: Maximum suggestions are automatically calculated based on document length (1 suggestion per 5 lines)
-- **Auto-Save**: Documents are automatically saved every 30 seconds when there are changes
-- **Unsaved Changes Indicator**: See "• Unsaved" next to the document title when there are unsaved changes
+1. **Write content** in the editor
+2. **Look for blue indicators** next to lines with suggestions
+3. **Click indicators or underlined text** to view suggestions
+4. **Review the diff** showing additions (green) and deletions (red)
+5. **Accept with Enter** or **reject with Escape**
 
-### Navigation
+### Keyboard Shortcuts
 
-- **Documents Panel**: Toggle with the "Documents" button in the header
-- **AI Suggestions Panel**: Toggle with the "Show/Hide AI Suggestions" button
-- **Mobile Responsive**: Panels automatically adapt for mobile devices
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + N` | New document |
+| `Ctrl/Cmd + S` | Save document |
+| `Enter` | Accept suggestion (in diff view) |
+| `Escape` | Reject suggestion (in diff view) |
 
-1. Start writing in the editor
-2. Blue indicators will appear next to text with suggestions
-3. Click the indicators or highlighted text to see suggested changes
-4. Review the diff showing additions (green) and deletions (red)
-5. Accept or reject suggestions using buttons or keyboard shortcuts
-
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 src/
 ├── components/
-│   ├── ui/              # Reusable UI components
-│   ├── DocEditor.tsx    # Main editor component
+│   ├── ui/              # Reusable UI components (Radix)
+│   ├── DocEditor.tsx    # Main editor with AI integration
 │   ├── DocumentList.tsx # Document management sidebar
-│   ├── Editor.tsx       # Text editor component
-│   ├── Header.tsx       # Application header
-│   └── SuggestionPanel.tsx # AI suggestions panel
+│   ├── Editor.tsx       # Core text editor component
+│   ├── Header.tsx       # Navigation and controls
+│   └── SuggestionPanel.tsx # AI suggestions interface
 ├── hooks/
-│   ├── useDocuments.ts  # Document operations hook
-│   ├── use-mobile.ts    # Mobile detection hook
-│   └── use-toast.ts     # Toast notifications hook
+│   ├── useDocuments.ts  # Document CRUD operations
+│   ├── use-mobile.ts    # Responsive design utilities
+│   └── use-toast.ts     # Notification system
 ├── lib/
-│   └── supabase.ts      # Supabase client configuration
+│   └── supabase.ts      # Database client configuration
 └── pages/
-    └── Index.tsx        # Main page component
+    └── Index.tsx        # Main application page
 ```
 
-## Customization
+## 🔧 Configuration
 
 ### Adding Authentication
 
 To add user authentication:
 
-1. Enable authentication in your Supabase project
-2. Update the RLS policy in `supabase-schema.sql`:
+1. **Enable auth in Supabase** project settings
+2. **Update RLS policies** in your database:
    ```sql
-   -- Remove the public policy
    DROP POLICY "Enable all operations for everyone" ON documents;
-   
-   -- Add authenticated users policy
    CREATE POLICY "Enable all operations for authenticated users" 
    ON documents FOR ALL USING (auth.role() = 'authenticated');
    ```
-3. Add user authentication to your React app using Supabase Auth
+3. **Integrate Supabase Auth** in your React components
 
-### Customizing AI Suggestions
+### Customizing AI Integration
 
-The current AI suggestions are mock data. To integrate with a real AI service:
+Replace mock suggestions with real AI:
 
-1. Replace the `generateMockSuggestion` function in `DocEditor.tsx`
-2. Add your AI service API calls
-3. Update the suggestion generation logic
+1. **Update `generateMockSuggestion`** in `DocEditor.tsx`
+2. **Add your AI API calls** (OpenAI, Anthropic, etc.)
+3. **Configure suggestion logic** for your use case
 
-### Styling
+## 🤝 Contributing
 
-The application uses Tailwind CSS for styling. You can customize:
+We love your input! We want to make contributing as easy and transparent as possible.
 
-- Colors: Update the Tailwind config
-- Components: Modify the UI components in `src/components/ui/`
-- Layout: Adjust the responsive breakpoints and spacing
+### Development Setup
 
-## Contributing
+1. Fork the repo and create your branch from `main`
+2. Install dependencies: `npm install`
+3. Make your changes and add tests if applicable
+4. Ensure the test suite passes: `npm test`
+5. Make sure your code lints: `npm run lint`
+6. Issue a pull request!
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Contribution Guidelines
 
-## License
+- 🐛 **Bug Reports**: Use GitHub issues with detailed reproduction steps
+- 💡 **Feature Requests**: Open an issue to discuss before implementing
+- 📝 **Code Style**: Follow existing patterns and run `npm run lint`
+- ✅ **Tests**: Add tests for new features
+- 📖 **Documentation**: Update docs for any API changes
 
-MIT License - see LICENSE file for details
+### Good First Issues
 
-## Support
+Look for issues labeled `good first issue` to get started!
 
-If you encounter any issues:
+## 📄 License
 
-1. Check that your Supabase URL and key are correctly set
-2. Verify the database schema was applied correctly
-3. Check the browser console for any error messages
-4. Ensure you have the latest dependencies installed
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-For additional help, create an issue in the GitHub repository.
+## 🙏 Acknowledgments
+
+- **[Supabase](https://supabase.com)** - For the amazing backend-as-a-service
+- **[Radix UI](https://www.radix-ui.com/)** - For accessible, unstyled UI components
+- **[Tailwind CSS](https://tailwindcss.com/)** - For the utility-first CSS framework
+- **[Vite](https://vitejs.dev/)** - For the lightning-fast build tool
+
+## 💬 Community & Support
+
+- 📫 **Questions**: Open a [GitHub Discussion](../../discussions)
+- 🐛 **Bug Reports**: Use [GitHub Issues](../../issues)
+- 💬 **Chat**: Join our [Discord Community](#) (coming soon)
+- 🐦 **Updates**: Follow [@writinghumans](#) (coming soon)
+
+---
+
+<div align="center">
+
+**[⭐ Star this repo](../../stargazers) if you find it helpful!**
+
+Made with ❤️ by the writing.humans team
+
+</div>
