@@ -21,13 +21,11 @@
 
 ## 🤔 What does this mean?
 
-**Confused what this means?** Unlike other "AI-powered" writing apps, we let you do the writing, and let AI do what it's best at: suggesting improvements, edits, and fixes.
+**Confused what this means?** Unlike other "AI-powered" writing apps, this lets you do the writing, and let AI do what it's best at: suggesting improvements, edits, and fixes.
 
 It's a simple writing app, and each small detail and feature had to fight its existence to make the final cut. Get into your writing flow state easily.
 
 Writing compelling content requires skill and practice. Our tool analyzes your text as you write, identifying opportunities for improvement and suggesting specific changes that will make your message more powerful and engaging.
-
-Join writers who use our platform to create impactful content that achieves their goals.
 
 As you write, it ruthlessly edits all the AI-fluff and keeps your writing humane (while you retain complete control over the final text).
 
