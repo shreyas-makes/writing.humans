@@ -21,19 +21,6 @@
 
 <img width="1211" alt="Screenshot 2025-06-01 at 7 55 32 PM" src="https://github.com/user-attachments/assets/252824b1-65f9-4c74-ac47-4488ee5b8525" />
 
-
-### Key Features Preview
-![Feature 1](docs/images/feature-1.png) | ![Feature 2](docs/images/feature-2.png)
-:---: | :---:
-AI Suggestions | Document Management
--->
-
-## 🌟 What Makes writing.humans Special
-
-writing.humans combines powerful features with elegant simplicity. At its heart, it's a writing tool that understands and adapts to your needs. Whether you're drafting a novel, composing an essay, or jotting down ideas, our intelligent editor enhances your natural writing flow without getting in the way.
-
-We've carefully crafted every aspect of the experience, from the clean, distraction-free interface to the subtle AI suggestions that appear exactly when you need them. The editor syncs seamlessly to the cloud, ensuring your work is always safe and accessible across all your devices.
-
 ### ✨ Core Features
 - 📝 **Rich Text Editor** - Clean, distraction-free writing experience
 - 🤖 **AI-Powered Suggestions** - Intelligent writing assistance and improvements
