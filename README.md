@@ -32,7 +32,11 @@
 AI Suggestions | Document Management
 -->
 
-## 🌟 Features
+## 🌟 What Makes writing.humans Special
+
+writing.humans combines powerful features with elegant simplicity. At its heart, it's a writing tool that understands and adapts to your needs. Whether you're drafting a novel, composing an essay, or jotting down ideas, our intelligent editor enhances your natural writing flow without getting in the way.
+
+We've carefully crafted every aspect of the experience, from the clean, distraction-free interface to the subtle AI suggestions that appear exactly when you need them. The editor syncs seamlessly to the cloud, ensuring your work is always safe and accessible across all your devices.
 
 ### ✨ Core Features
 - 📝 **Rich Text Editor** - Clean, distraction-free writing experience
