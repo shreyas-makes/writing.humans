@@ -22,25 +22,13 @@
 <img width="1211" alt="Screenshot 2025-06-01 at 7 55 32 PM" src="https://github.com/user-attachments/assets/252824b1-65f9-4c74-ac47-4488ee5b8525" />
 
 ### ✨ Core Features
-- 📝 **Rich Text Editor** - Clean, distraction-free writing experience
-- 🤖 **AI-Powered Suggestions** - Intelligent writing assistance and improvements
-- 💾 **Cloud Sync** - Persistent storage with Supabase backend
-- 📱 **Responsive Design** - Works seamlessly on desktop and mobile
-- 🔄 **Auto-Save** - Never lose your work with automatic saving
-- 📂 **Document Management** - Create, organize, and manage your documents
+Experience a clean, distraction-free writing environment with our rich text editor. Our AI-powered suggestions provide intelligent writing assistance and improvements as you work. Your documents are automatically synced to the cloud via our Supabase backend, ensuring your work is always safe and accessible. The responsive design works seamlessly across desktop and mobile devices, while auto-save functionality means you'll never lose your progress. Easily create, organize and manage all your documents in one place.
 
 ### 🎯 AI Assistance
-- **Visual Indicators** - Blue dots and underlines show suggestion locations
-- **Interactive Diff View** - See exactly what changes are suggested
-- **Context-Aware** - Suggestions based on your writing style and content
-- **Smart Limits** - Automatically calculated suggestion density
-- **Multiple Interaction Methods** - Click, hover, or use keyboard shortcuts
+Our intelligent AI system provides subtle visual indicators with blue dots and underlines to show where suggestions are available. An interactive diff view clearly displays proposed changes, with context-aware suggestions that adapt to your unique writing style and content. Smart suggestion density limits prevent overwhelming feedback, while multiple interaction methods - including clicks, hovers, and keyboard shortcuts - let you work the way you prefer.
 
 ### 📱 User Experience
-- **Mobile-First Design** - Touch-friendly interface for all devices
-- **Keyboard Shortcuts** - Power user shortcuts for quick actions
-- **Real-time Sync** - Changes sync across all your devices
-- **Offline Support** - Continue writing even without internet
+Writing.humans is built mobile-first with a touch-friendly interface that works smoothly on all devices. Power users will appreciate the comprehensive keyboard shortcuts for quick actions. Your changes sync in real-time across all your devices, and offline support means you can keep writing even without an internet connection.
 
 ## 🛠️ Tech Stack
 
