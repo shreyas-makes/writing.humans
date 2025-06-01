@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from './supabase';
 import type { SignInWithPasswordCredentials, SignUpWithPasswordCredentials } from '@supabase/supabase-js';
 
 export const signUp = async (credentials: SignUpWithPasswordCredentials) => {
@@ -28,8 +28,13 @@ export const signOut = async () => {
 };
 
 export const sendPasswordResetEmail = async (email: string) => {
+  // Use production URL for password resets to avoid localhost issues
+  const redirectUrl = import.meta.env.PROD 
+    ? 'https://blue-scribe-suggest.vercel.app/update-password'
+    : `${window.location.origin}/update-password`;
+    
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/update-password`, // You'll need to create this page
+    redirectTo: redirectUrl,
   });
   if (error) {
     console.error('Error sending password reset email:', error.message);

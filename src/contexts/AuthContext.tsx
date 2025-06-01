@@ -206,8 +206,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = useCallback(async (email: string) => {
     try {
+      // Use production URL for password resets to avoid localhost issues
+      const redirectUrl = import.meta.env.PROD 
+        ? 'https://blue-scribe-suggest.vercel.app/update-password'
+        : `${window.location.origin}/update-password`;
+        
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo: redirectUrl,
       })
       
       if (error) {
